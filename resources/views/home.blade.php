@@ -109,7 +109,7 @@
                 <p class="text-body-sm font-body-sm text-primary-fixed-dim mb-8">Inscription gratuite · Paiement à l'unité · Téléchargement immédiat</p>
 
                 {{-- Recherche --}}
-                <form action="#" method="GET" role="search"
+                <form action="{{ url('/catalogue') }}" method="GET" role="search"
                       class="max-w-2xl mx-auto lg:mx-0 bg-surface-container-lowest p-1.5 rounded-xl shadow-lg flex items-center gap-1 sm:gap-2 mb-4 focus-within:ring-2 focus-within:ring-secondary-fixed-dim transition">
                     <span class="material-symbols-outlined pl-2 sm:pl-3 text-outline" aria-hidden="true">search</span>
                     <label for="hero-search" class="sr-only">Rechercher un cours ou un document</label>
@@ -125,11 +125,11 @@
                 {{-- Sujets fréquents (liens internes utiles au SEO) --}}
                 <div class="flex flex-wrap items-center justify-center lg:justify-start gap-2 text-label-md font-label-md">
                     <span class="w-full sm:w-auto text-body-sm font-body-sm text-primary-fixed-dim sm:mr-1">Sujets fréquents :</span>
-                    <a href="#" class="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-on-primary transition-colors">Mathématiques</a>
-                    <a href="#" class="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-on-primary transition-colors">Droit Privé</a>
-                    <a href="#" class="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-on-primary transition-colors">Informatique &amp; Code</a>
-                    <a href="#" class="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-on-primary transition-colors">Économie &amp; Gestion</a>
-                    <a href="#" class="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-on-primary transition-colors">Sciences Physiques</a>
+                    <a href="{{ url('/catalogue') }}?q={{ urlencode('Mathématiques') }}" class="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-on-primary transition-colors">Mathématiques</a>
+                    <a href="{{ url('/catalogue') }}?q={{ urlencode('Droit Privé') }}" class="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-on-primary transition-colors">Droit Privé</a>
+                    <a href="{{ url('/catalogue') }}?q={{ urlencode('Informatique & Code') }}" class="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-on-primary transition-colors">Informatique &amp; Code</a>
+                    <a href="{{ url('/catalogue') }}?q={{ urlencode('Économie & Gestion') }}" class="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-on-primary transition-colors">Économie &amp; Gestion</a>
+                    <a href="{{ url('/catalogue') }}?q={{ urlencode('Sciences Physiques') }}" class="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-on-primary transition-colors">Sciences Physiques</a>
                 </div>
             </div>
 
@@ -281,7 +281,7 @@
                 <h2 id="catalogue-title" class="text-headline-lg-mobile md:text-headline-lg font-headline-lg text-primary tracking-tight">Ressources populaires</h2>
                 <p class="text-body-md font-body-md text-on-surface-variant mt-1">Sélectionnées pour leur rigueur et plébiscitées par les apprenants.</p>
             </div>
-            <a href="#" class="inline-flex items-center gap-1 text-label-lg font-label-lg text-primary-container font-bold hover:text-secondary transition-colors flex-shrink-0">
+            <a href="{{ url('/catalogue') }}" class="inline-flex items-center gap-1 text-label-lg font-label-lg text-primary-container font-bold hover:text-secondary transition-colors flex-shrink-0">
                 <span>Voir tout le catalogue</span>
                 <span class="material-symbols-outlined text-base" aria-hidden="true">trending_flat</span>
             </a>

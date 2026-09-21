@@ -153,6 +153,7 @@
         html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: 5rem; }
         body { overflow-x: hidden; }
         @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+        .icon-fill { font-variation-settings: 'FILL' 1; }
         details > summary { list-style: none; }
         details > summary::-webkit-details-marker { display: none; }
     </style>
@@ -163,6 +164,8 @@
 <body class="bg-background text-on-surface antialiased min-h-screen flex flex-col font-body-md text-body-md selection:bg-surface-variant selection:text-primary">
 
     <a href="#contenu" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:rounded-lg focus:bg-primary focus:text-on-primary">Aller au contenu principal</a>
+
+    @php $isCatalogue = request()->is('catalogue*'); @endphp
 
     {{-- ===================== HEADER ===================== --}}
     <header class="bg-surface-container-lowest shadow-sm top-0 sticky z-40">
@@ -183,7 +186,8 @@
 
             {{-- Centre : navigation (à partir de lg) --}}
             <nav class="hidden lg:flex items-center gap-space-lg" aria-label="Navigation principale">
-                <a href="{{ url('/') }}#catalogue" class="text-primary font-bold border-b-2 border-secondary py-1 text-label-lg font-label-lg">Catalogue</a>
+                <a href="{{ url('/catalogue') }}" @if ($isCatalogue) aria-current="page" @endif
+                   @class(['py-1 text-label-lg font-label-lg transition-colors', 'text-primary font-bold border-b-2 border-secondary' => $isCatalogue, 'text-on-surface-variant hover:text-primary' => ! $isCatalogue])>Catalogue</a>
                 <a href="{{ url('/') }}#comment-ca-marche" class="text-on-surface-variant hover:text-primary py-1 text-label-lg font-label-lg transition-colors">Comment ça marche</a>
                 <a href="{{ url('/') }}#vendre" class="text-on-surface-variant hover:text-primary py-1 text-label-lg font-label-lg transition-colors">Espace Vendeur</a>
                 @auth
@@ -251,9 +255,10 @@
                 </div>
 
                 <nav class="flex flex-col" aria-label="Navigation mobile">
-                    <a href="{{ url('/') }}#catalogue" class="py-3 border-b border-outline-variant/20 text-primary font-bold text-label-lg font-label-lg flex items-center justify-between">
+                    <a href="{{ url('/catalogue') }}" @if ($isCatalogue) aria-current="page" @endif
+                       @class(['py-3 border-b border-outline-variant/20 text-label-lg font-label-lg flex items-center justify-between transition-colors', 'text-primary font-bold' => $isCatalogue, 'text-on-surface-variant hover:text-primary' => ! $isCatalogue])>
                         <span>Catalogue</span>
-                        <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                        @if ($isCatalogue)<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>@endif
                     </a>
                     <a href="{{ url('/') }}#comment-ca-marche" class="py-3 border-b border-outline-variant/20 text-on-surface-variant hover:text-primary text-label-lg font-label-lg transition-colors">Comment ça marche</a>
                     <a href="{{ url('/') }}#vendre" class="py-3 text-on-surface-variant hover:text-primary text-label-lg font-label-lg transition-colors">Espace Vendeur</a>
@@ -290,23 +295,55 @@
     </main>
 
     {{-- ===================== FOOTER ===================== --}}
-    <footer class="bg-primary-deep border-t border-white/10 mt-auto">
+    <footer class="bg-primary-deep border-t border-white/10 mt-auto text-on-primary">
         <div class="w-full py-space-2xl px-margin sm:px-space-xl max-w-7xl mx-auto flex flex-col gap-space-lg">
-            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-4 border-b border-white/10">
-                <a href="{{ url('/') }}" class="inline-flex items-center bg-white rounded-lg px-3 py-2" aria-label="Tafely Kôrsy — Accueil">
-                    <img src="{{ asset('images/logo.png') }}" alt="Tafely Kôrsy" class="h-8 w-auto" loading="lazy" decoding="async">
-                </a>
-                <nav class="flex flex-wrap gap-x-6 gap-y-2 text-label-md font-label-md" aria-label="Pied de page">
-                    <a href="#" class="text-primary-fixed-dim hover:text-on-primary transition-colors duration-150">À propos</a>
-                    <a href="#" class="text-primary-fixed-dim hover:text-on-primary transition-colors duration-150">Conditions Générales</a>
-                    <a href="{{ url('/') }}#vendre" class="text-primary-fixed-dim hover:text-on-primary transition-colors duration-150">Rémunération Vendeurs</a>
-                    <a href="#" class="text-primary-fixed-dim hover:text-on-primary transition-colors duration-150">Paiements Sécurisés (Mvola, Orange Money, Airtel Money)</a>
-                    <a href="{{ url('/') }}#faq" class="text-primary-fixed-dim hover:text-on-primary transition-colors duration-150">Support &amp; FAQ</a>
+
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-space-xl pb-space-lg border-b border-white/10">
+
+                {{-- Marque & mission --}}
+                <div class="md:col-span-5 flex flex-col gap-space-sm">
+                    <a href="{{ url('/') }}" class="inline-flex items-center self-start bg-white rounded-lg px-3 py-2" aria-label="Tafely Kôrsy — Accueil">
+                        <img src="{{ asset('images/logo.png') }}" alt="Tafely Kôrsy" class="h-8 w-auto" loading="lazy" decoding="async">
+                    </a>
+                    <p class="text-body-sm font-body-sm text-primary-fixed-dim max-w-sm">
+                        La place de marché académique certifiée de Madagascar. Conçue pour permettre aux enseignants émérites de monétiser leurs travaux et aux élèves de réussir leurs examens d'État avec sérénité.
+                    </p>
+                    <div class="flex items-center gap-space-sm text-primary-fixed-dim pt-1">
+                        <span class="material-symbols-outlined text-lg" aria-hidden="true">security</span>
+                        <span class="text-label-sm font-label-sm">Transactions sécurisées • Paiement Mobile Money direct</span>
+                    </div>
+                </div>
+
+                {{-- Colonnes de liens --}}
+                <nav class="md:col-span-7 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-space-lg" aria-label="Pied de page">
+                    <div class="flex flex-col gap-space-xs">
+                        <span class="text-label-md font-label-md font-bold text-on-primary uppercase tracking-wider mb-1">Plateforme</span>
+                        <a href="#" class="text-primary-fixed-dim hover:text-on-primary transition-colors duration-150 text-body-sm font-body-sm">À propos</a>
+                        <a href="{{ url('/catalogue') }}" class="text-primary-fixed-dim hover:text-on-primary transition-colors duration-150 text-body-sm font-body-sm">Catalogue Général</a>
+                        <a href="{{ url('/catalogue') }}?niveau=terminale" class="text-primary-fixed-dim hover:text-on-primary transition-colors duration-150 text-body-sm font-body-sm">Annales Baccalauréat</a>
+                    </div>
+                    <div class="flex flex-col gap-space-xs">
+                        <span class="text-label-md font-label-md font-bold text-on-primary uppercase tracking-wider mb-1">Enseignants</span>
+                        <a href="{{ url('/') }}#vendre" class="text-primary-fixed-dim hover:text-on-primary transition-colors duration-150 text-body-sm font-body-sm">Espace Vendeur</a>
+                        <a href="{{ url('/') }}#vendre" class="text-primary-fixed-dim hover:text-on-primary transition-colors duration-150 text-body-sm font-body-sm">Rémunération Vendeurs</a>
+                        <a href="#" class="text-primary-fixed-dim hover:text-on-primary transition-colors duration-150 text-body-sm font-body-sm">Charte Pédagogique</a>
+                    </div>
+                    <div class="flex flex-col gap-space-xs">
+                        <span class="text-label-md font-label-md font-bold text-on-primary uppercase tracking-wider mb-1">Sécurité &amp; Légal</span>
+                        <a href="#" class="text-primary-fixed-dim hover:text-on-primary transition-colors duration-150 text-body-sm font-body-sm">Paiements Sécurisés (Mvola, Orange Money, Airtel Money)</a>
+                        <a href="#" class="text-primary-fixed-dim hover:text-on-primary transition-colors duration-150 text-body-sm font-body-sm">Conditions Générales</a>
+                        <a href="{{ url('/') }}#faq" class="text-primary-fixed-dim hover:text-on-primary transition-colors duration-150 text-body-sm font-body-sm">Support &amp; FAQ</a>
+                    </div>
                 </nav>
             </div>
-            <div class="text-body-sm font-body-sm text-primary-fixed-dim flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-space-sm pt-space-xs text-body-sm font-body-sm text-primary-fixed-dim">
                 <p>© {{ now()->year }} Tafely Kôrsy. Tous droits réservés. L'excellence pédagogique certifiée.</p>
-                <p class="text-label-sm font-label-sm">Conçu pour les étudiants et enseignants de Madagascar</p>
+                <div class="flex items-center gap-space-md text-label-sm font-label-sm">
+                    <span>Antananarivo, Madagascar</span>
+                    <span aria-hidden="true">•</span>
+                    <span>Version Web Dédiée</span>
+                </div>
             </div>
         </div>
     </footer>
