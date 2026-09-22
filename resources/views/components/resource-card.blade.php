@@ -92,7 +92,7 @@
                     </div>
                 </div>
                 <div class="flex items-center text-label-sm font-label-sm text-on-surface font-bold flex-shrink-0" title="Note moyenne : {{ $rating }} sur 5">
-                    <span class="material-symbols-outlined icon-fill text-sm text-amber-500 mr-0.5" aria-hidden="true">star</span>
+                    <span class="material-symbols-outlined icon-fill text-sm text-secondary mr-0.5" aria-hidden="true">star</span>
                     <span>{{ $rating }}</span>
                     <span class="text-on-surface-variant font-normal ml-0.5">({{ $r['reviews'] }})</span>
                 </div>
@@ -110,7 +110,7 @@
                 </div>
 
                 {{-- Visiteur non connecté : ouvre la modale de connexion --}}
-                <button type="button" @guest data-modal-open="modal-login" @endguest
+                <button type="button" @guest data-modal-open="modal-auth" data-auth-mode="login" @endguest
                         aria-label="Acheter : {{ $r['title'] }}"
                         @class([
                             'relative z-[2] text-on-primary px-space-md py-2 rounded-lg text-label-md font-label-md flex items-center gap-1 shadow-sm transition-all duration-150 active:scale-[0.98]',

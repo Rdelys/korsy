@@ -95,12 +95,12 @@
 
                 {{-- CTA principaux --}}
                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-3 mb-3">
-                    <button type="button" data-modal-open="modal-register-buyer"
+                    <button type="button" data-modal-open="modal-auth" data-auth-mode="register" data-auth-role="student"
                             class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg bg-surface-container-lowest text-primary font-label-lg text-label-lg shadow-lg hover:bg-primary-fixed transition-colors active:scale-[0.98]">
                         <span class="material-symbols-outlined text-lg" aria-hidden="true">shopping_bag</span>
                         <span>Créer mon compte gratuit</span>
                     </button>
-                    <button type="button" data-modal-open="modal-register-seller"
+                    <button type="button" data-modal-open="modal-auth" data-auth-mode="register" data-auth-role="teacher"
                             class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg bg-secondary text-on-secondary font-label-lg text-label-lg shadow-lg hover:bg-secondary-container transition-colors active:scale-[0.98]">
                         <span class="material-symbols-outlined text-lg" aria-hidden="true">add_circle</span>
                         <span>Vendre mes cours</span>
@@ -459,12 +459,12 @@
             </ol>
 
             <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
-                <button type="button" data-modal-open="modal-register-buyer"
+                <button type="button" data-modal-open="modal-auth" data-auth-mode="register" data-auth-role="student"
                         class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg bg-primary-container text-on-primary font-label-lg text-label-lg hover:bg-primary transition-colors active:scale-[0.98]">
                     <span>Créer mon compte gratuit</span>
                     <span class="material-symbols-outlined text-lg" aria-hidden="true">arrow_forward</span>
                 </button>
-                <button type="button" data-modal-open="modal-login"
+                <button type="button" data-modal-open="modal-auth" data-auth-mode="login"
                         class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3.5 rounded-lg border border-outline-variant text-primary font-label-lg text-label-lg hover:bg-surface-container-low transition-colors">
                     J'ai déjà un compte
                 </button>
@@ -500,12 +500,12 @@
                 </ol>
 
                 <div class="flex flex-col sm:flex-row gap-3">
-                    <button type="button" data-modal-open="modal-register-seller"
+                    <button type="button" data-modal-open="modal-auth" data-auth-mode="register" data-auth-role="teacher"
                             class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg bg-secondary text-on-secondary font-label-lg text-label-lg shadow-lg hover:bg-secondary-container transition-colors active:scale-[0.98]">
                         <span class="material-symbols-outlined text-lg" aria-hidden="true">add_circle</span>
                         <span>Devenir vendeur</span>
                     </button>
-                    <button type="button" data-modal-open="modal-login"
+                    <button type="button" data-modal-open="modal-auth" data-auth-mode="login"
                             class="inline-flex items-center justify-center px-6 py-3.5 rounded-lg border border-white/30 text-on-primary font-label-lg text-label-lg hover:bg-white/10 transition-colors">
                         Déjà vendeur ? Connexion
                     </button>
@@ -583,17 +583,17 @@
             <h2 id="cta-title" class="text-headline-lg-mobile md:text-headline-lg font-headline-lg tracking-tight mb-3">Prêt à apprendre ou à partager votre savoir ?</h2>
             <p class="text-body-md md:text-body-lg font-body-lg text-primary-fixed mb-8">Rejoignez Tafely Kôrsy et faites de chaque cours une réussite.</p>
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3">
-                <button type="button" data-modal-open="modal-register-buyer"
+                <button type="button" data-modal-open="modal-auth" data-auth-mode="register" data-auth-role="student"
                         class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg bg-surface-container-lowest text-primary font-label-lg text-label-lg shadow-lg hover:bg-primary-fixed transition-colors active:scale-[0.98]">
                     <span class="material-symbols-outlined text-lg" aria-hidden="true">shopping_bag</span>
                     <span>Acheter un cours</span>
                 </button>
-                <button type="button" data-modal-open="modal-register-seller"
+                <button type="button" data-modal-open="modal-auth" data-auth-mode="register" data-auth-role="teacher"
                         class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg bg-secondary text-on-secondary font-label-lg text-label-lg shadow-lg hover:bg-secondary-container transition-colors active:scale-[0.98]">
                     <span class="material-symbols-outlined text-lg" aria-hidden="true">add_circle</span>
                     <span>Vendre un cours</span>
                 </button>
-                <button type="button" data-modal-open="modal-login"
+                <button type="button" data-modal-open="modal-auth" data-auth-mode="login"
                         class="inline-flex items-center justify-center px-6 py-3.5 rounded-lg border border-white/40 text-on-primary font-label-lg text-label-lg hover:bg-white/10 transition-colors">
                     Connexion
                 </button>

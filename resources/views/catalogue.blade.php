@@ -129,44 +129,44 @@
 @section('content')
 
     {{-- ============================ 1. HERO ============================ --}}
-    <section class="bg-surface-container-lowest border-b border-outline-variant/20 relative overflow-hidden" aria-labelledby="catalogue-hero-title">
-        <div class="absolute inset-0 opacity-[0.05] pointer-events-none" aria-hidden="true"
-             style="background-image: radial-gradient(#0b3b8f 1px, transparent 1px); background-size: 24px 24px;"></div>
+    <section class="relative overflow-hidden bg-gradient-to-br from-primary-deep via-primary to-primary-container text-on-primary" aria-labelledby="catalogue-hero-title">
+        <div class="absolute inset-0 pointer-events-none" aria-hidden="true"
+             style="background-image: radial-gradient(circle at 15% 20%, rgba(255,255,255,.14) 0, transparent 38%), radial-gradient(circle at 90% 80%, rgba(200,16,46,.40) 0, transparent 34%);"></div>
 
-        <div class="max-w-7xl mx-auto px-margin sm:px-space-xl py-10 md:py-space-2xl grid grid-cols-1 lg:grid-cols-12 gap-space-xl items-center relative z-10">
+        <div class="relative max-w-7xl mx-auto px-margin sm:px-space-xl py-10 md:py-space-2xl grid grid-cols-1 lg:grid-cols-12 gap-space-xl items-center z-10">
 
             {{-- Texte --}}
             <div class="lg:col-span-7 flex flex-col items-start gap-space-md">
-                <div class="inline-flex items-center gap-space-xs px-space-sm py-1 bg-secondary-fixed/60 border border-secondary/20 rounded-full text-secondary text-label-sm font-label-sm uppercase">
-                    <span class="material-symbols-outlined icon-fill text-sm" aria-hidden="true">verified</span>
+                <div class="inline-flex items-center gap-space-xs px-space-sm py-1 bg-white/10 border border-white/20 rounded-full text-on-primary text-label-sm font-label-sm uppercase">
+                    <span class="material-symbols-outlined icon-fill text-sm text-secondary-fixed-dim" aria-hidden="true">verified</span>
                     <span>Préparation Baccalauréat {{ $annee }}</span>
                 </div>
 
-                <h1 id="catalogue-hero-title" class="text-headline-display-mobile md:text-headline-display font-headline-display text-primary tracking-tight leading-tight">
-                    Préparez votre réussite avec l'élite des professeurs certifiés.
+                <h1 id="catalogue-hero-title" class="text-headline-display-mobile md:text-headline-display font-headline-display tracking-tight leading-tight">
+                    Préparez votre réussite avec <span class="text-secondary-fixed-dim">l'élite des professeurs certifiés</span>.
                 </h1>
 
-                <p class="text-body-md md:text-body-lg font-body-lg text-on-surface-variant max-w-2xl leading-relaxed">
+                <p class="text-body-md md:text-body-lg font-body-lg text-primary-fixed max-w-2xl leading-relaxed">
                     Accédez instantanément à des fascicules A4 haute résolution, résolutions d'examens nationaux et masterclasses vidéo. Débloquez les documents vérifiés par règlement sécurisé MVola, Orange Money et Airtel Money.
                 </p>
 
                 {{-- Chiffres clés --}}
-                <div class="grid grid-cols-3 gap-3 sm:gap-space-lg w-full max-w-xl border-y border-outline-variant/30 py-space-md">
+                <div class="grid grid-cols-3 gap-3 sm:gap-space-lg w-full max-w-xl border-y border-white/15 py-space-md">
                     @foreach ($stats as $i => $stat)
-                        <div @class(['border-l border-outline-variant/40 pl-3 sm:pl-space-md' => $i > 0])>
-                            <p class="text-headline-sm sm:text-headline-md font-headline-md font-bold {{ $stat['accent'] ? 'text-secondary' : 'text-primary' }}">{{ $stat['value'] }}</p>
-                            <p class="text-label-md font-label-md text-on-surface-variant">{{ $stat['label'] }}</p>
+                        <div @class(['border-l border-white/15 pl-3 sm:pl-space-md' => $i > 0])>
+                            <p class="text-headline-sm sm:text-headline-md font-headline-md font-bold {{ $stat['accent'] ? 'text-secondary-fixed-dim' : 'text-on-primary' }}">{{ $stat['value'] }}</p>
+                            <p class="text-label-md font-label-md text-primary-fixed">{{ $stat['label'] }}</p>
                         </div>
                     @endforeach
                 </div>
 
                 {{-- Appels à l'action --}}
                 <div class="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-space-md w-full sm:w-auto">
-                    <a href="#catalogue-section" class="inline-flex items-center justify-center gap-space-xs bg-primary-container hover:bg-primary text-on-primary px-space-xl py-3 rounded-lg text-label-lg font-label-lg shadow-sm transition-all duration-150 active:scale-[0.98]">
+                    <a href="#catalogue-section" class="inline-flex items-center justify-center gap-space-xs bg-secondary hover:bg-secondary-container text-on-secondary px-space-xl py-3 rounded-lg text-label-lg font-label-lg shadow-lg transition-all duration-150 active:scale-[0.98]">
                         <span class="material-symbols-outlined text-lg" aria-hidden="true">school</span>
                         <span>Explorer le Catalogue Bacc</span>
                     </a>
-                    <a href="#" class="inline-flex items-center justify-center gap-space-xs bg-surface-container-lowest border border-outline-variant hover:border-primary-container text-primary px-space-lg py-3 rounded-lg text-label-lg font-label-lg transition-all duration-150 active:scale-[0.98]">
+                    <a href="#" class="inline-flex items-center justify-center gap-space-xs bg-white/10 border border-white/30 hover:bg-white/15 text-on-primary px-space-lg py-3 rounded-lg text-label-lg font-label-lg transition-all duration-150 active:scale-[0.98]">
                         <span class="material-symbols-outlined text-lg" aria-hidden="true">description</span>
                         <span>Feuilleter un extrait gratuit</span>
                     </a>
@@ -175,7 +175,7 @@
 
             {{-- Visuel --}}
             <div class="lg:col-span-5">
-                <div class="bg-surface-container-lowest p-space-md sm:p-space-lg rounded-xl border border-outline-variant/40 shadow-sm relative">
+                <div class="bg-surface-container-lowest p-space-md sm:p-space-lg rounded-xl border border-outline-variant/40 shadow-2xl relative">
                     <div class="relative rounded-lg overflow-hidden border border-outline-variant/30 bg-surface-container">
                         <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBu78MtK3kU7YZ7uSvkI_kGdFD2fUbBll_e3gahChEUhjwhwT1Tm2Y-zp-FyBQcBMrxF_2IikShwiQtLk-6ZgOLy1WR3IkGdQZgPLXO9sriYGrv0Gm_2LT6FsshHDVNI092ym8NWwF1bt3UNQr9Upo2BLcWtA1P7ep02T-FxkizXSBEW4Lp6A008i7pjpqfWz8_Lh3e1A2uTJQ59GRyeemwAuQ6g0yrP3QVnZsiKAEl8AiuyrBqLmc" alt="Étudiant préparant les examens" class="w-full h-52 sm:h-64 object-cover" decoding="async">
                         <div class="absolute inset-0 bg-gradient-to-t from-primary-deep/85 via-transparent to-transparent flex items-end p-space-md">
@@ -408,21 +408,21 @@
                     <div class="p-2 sm:p-space-md rounded-xl border-2 border-primary-container bg-surface-container-lowest flex flex-col items-center justify-center text-center">
                         <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#00853f]/10 flex items-center justify-center text-[#00853f] mb-2 font-black text-base sm:text-lg" aria-hidden="true">MV</div>
                         <span class="text-label-md sm:text-label-lg font-label-lg font-bold text-primary">MVola</span>
-                        <span class="text-label-sm font-label-sm text-on-tertiary-container font-bold flex items-center gap-0.5 mt-0.5">
+                        <span class="text-label-sm font-label-sm text-primary-container font-bold flex items-center gap-0.5 mt-0.5">
                             <span class="material-symbols-outlined text-xs" aria-hidden="true">check_circle</span>Actif 24/7
                         </span>
                     </div>
                     <div class="p-2 sm:p-space-md rounded-xl border border-outline-variant/60 bg-surface-container-lowest flex flex-col items-center justify-center text-center hover:border-primary-container transition-colors">
                         <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#f16e00]/10 flex items-center justify-center text-[#f16e00] mb-2 font-black text-base sm:text-lg" aria-hidden="true">OM</div>
                         <span class="text-label-md sm:text-label-lg font-label-lg font-bold text-primary">Orange Money</span>
-                        <span class="text-label-sm font-label-sm text-on-tertiary-container font-bold flex items-center gap-0.5 mt-0.5">
+                        <span class="text-label-sm font-label-sm text-primary-container font-bold flex items-center gap-0.5 mt-0.5">
                             <span class="material-symbols-outlined text-xs" aria-hidden="true">check_circle</span>Actif 24/7
                         </span>
                     </div>
                     <div class="p-2 sm:p-space-md rounded-xl border border-outline-variant/60 bg-surface-container-lowest flex flex-col items-center justify-center text-center hover:border-primary-container transition-colors">
                         <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#e40000]/10 flex items-center justify-center text-[#e40000] mb-2 font-black text-base sm:text-lg" aria-hidden="true">AM</div>
                         <span class="text-label-md sm:text-label-lg font-label-lg font-bold text-primary">Airtel Money</span>
-                        <span class="text-label-sm font-label-sm text-on-tertiary-container font-bold flex items-center gap-0.5 mt-0.5">
+                        <span class="text-label-sm font-label-sm text-primary-container font-bold flex items-center gap-0.5 mt-0.5">
                             <span class="material-symbols-outlined text-xs" aria-hidden="true">check_circle</span>Actif 24/7
                         </span>
                     </div>

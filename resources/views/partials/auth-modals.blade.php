@@ -1,230 +1,263 @@
 {{--
-    Modales d'authentification (éléments <dialog> natifs : focus piégé, fermeture avec Échap, accessibilité incluse).
-    Ouverture : n'importe quel élément avec  data-modal-open="modal-login | modal-register-buyer | modal-register-seller"
-    Fermeture : data-modal-close, clic sur le fond, ou touche Échap.
-    Version STATIQUE : les formulaires n'envoient rien pour l'instant (voir le script du layout).
+    Modale d'authentification UNIQUE, avec :
+      - un onglet Connexion / Inscription           (data-auth-tab="login|register")
+      - un sélecteur de profil Acheteur / Vendeur    (data-auth-role="student|teacher")
+      - dans l'onglet Connexion : bascule Téléphone Mobile Money / E-mail (data-login-method="phone|email")
+
+    Ouverture :  data-modal-open="modal-auth"
+                 + data-auth-mode="login|register" (onglet à ouvrir, facultatif — défaut : login)
+                 + data-auth-role="student|teacher" (profil à présélectionner, facultatif — défaut : student)
+    Fermeture :  data-modal-close, clic sur le fond, ou touche Échap.
+    Toute la logique (onglets, profil, mot de passe visible) est gérée par le script du layout.
+
+    Version STATIQUE : les formulaires n'envoient rien pour l'instant.
 --}}
 @php
-    $dialogClass = 'm-auto p-0 w-[calc(100%-1.5rem)] sm:w-full max-w-md max-h-[92vh] overflow-y-auto rounded-xl bg-surface-container-lowest text-on-surface shadow-2xl backdrop:bg-primary-deep/70 backdrop:backdrop-blur-sm';
-    $closeClass  = 'absolute top-3 right-3 p-1.5 rounded text-outline hover:text-primary hover:bg-surface-container-low transition-colors';
-    $labelClass  = 'block mb-1 text-label-md font-label-md text-on-surface';
-    $inputClass  = 'w-full px-3 py-2.5 text-body-md font-body-md bg-surface border border-outline-variant rounded-lg text-on-surface placeholder:text-outline focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition-colors';
-    $checkClass  = 'mt-0.5 rounded border-outline-variant text-primary-container focus:ring-primary-container';
-    $linkClass   = 'text-primary font-bold hover:text-secondary transition-colors underline-offset-2 hover:underline';
+    $inputClass = 'flex-1 py-2.5 px-3 text-body-md font-body-md text-on-surface placeholder:text-outline/70 border-0 focus:ring-0 outline-none bg-transparent';
+    $fieldWrap  = 'relative flex items-center rounded-lg border border-outline-variant/60 focus-within:border-primary-container focus-within:ring-1 focus-within:ring-primary-container bg-surface-container-lowest overflow-hidden transition-colors';
+    $labelClass = 'block text-label-sm font-label-sm text-primary mb-1';
+    $linkClass  = 'text-primary font-bold hover:text-secondary transition-colors underline-offset-2 hover:underline';
 @endphp
 
-{{-- ========================= INSCRIPTION VENDEUR ========================= --}}
-<dialog id="modal-register-seller" data-modal aria-labelledby="modal-register-seller-title" class="{{ $dialogClass }}">
-    <div class="relative p-space-lg sm:p-space-xl border-t-4 border-secondary">
-        <button type="button" data-modal-close aria-label="Fermer" class="{{ $closeClass }}">
-            <span class="material-symbols-outlined text-xl" aria-hidden="true">close</span>
-        </button>
+<dialog id="modal-auth" data-modal aria-labelledby="modal-auth-title"
+        class="m-auto p-0 w-[calc(100%-1.5rem)] sm:w-full max-w-[540px] max-h-[92vh] overflow-y-auto rounded-xl bg-surface-container-lowest text-on-surface shadow-2xl border border-outline-variant/30 backdrop:bg-primary-deep/70 backdrop:backdrop-blur-sm">
 
-        <div class="w-11 h-11 rounded-lg bg-secondary-fixed text-secondary flex items-center justify-center mb-4">
-            <span class="material-symbols-outlined text-2xl" aria-hidden="true">add_circle</span>
-        </div>
-        <h2 id="modal-register-seller-title" class="text-headline-md font-headline-md text-primary">Devenez vendeur sur Tafely Kôrsy</h2>
-        <p class="text-body-md font-body-md text-on-surface-variant mt-1 mb-5">Publiez vos cours, fiches et vidéos, fixez vos tarifs et recevez vos revenus par Mobile Money.</p>
+    {{-- En-tête figé : liseré + logo, restent visibles pendant le défilement du contenu --}}
+    <div class="sticky top-0 z-20 bg-surface-container-lowest">
+        <div class="h-1.5 w-full bg-gradient-to-r from-primary-container via-secondary to-primary-container" aria-hidden="true"></div>
 
-        <form method="POST" action="#" data-static-form class="flex flex-col gap-4">
-            @csrf
-            <input type="hidden" name="role" value="seller">
+        <div class="relative flex items-center justify-center py-3 px-space-lg sm:px-space-xl border-b border-outline-variant/20">
+            <h2 id="modal-auth-title" class="sr-only">Tafely Kôrsy</h2>
+            <img src="{{ asset('images/logo.png') }}" alt="Tafely Kôrsy" class="h-8 w-auto" decoding="async">
 
-            <div>
-                <label for="seller-name" class="{{ $labelClass }}">Nom complet</label>
-                <input id="seller-name" name="name" type="text" required autocomplete="name" placeholder="Ex. Hery Rakotobe" class="{{ $inputClass }}">
-            </div>
-
-            <div>
-                <label for="seller-email" class="{{ $labelClass }}">Adresse e-mail</label>
-                <input id="seller-email" name="email" type="email" required autocomplete="email" placeholder="nom@exemple.mg" class="{{ $inputClass }}">
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-5 gap-3">
-                <div class="sm:col-span-2">
-                    <label for="seller-operator" class="{{ $labelClass }}">Opérateur</label>
-                    <select id="seller-operator" name="operator" required class="{{ $inputClass }}">
-                        <option value="">Choisir…</option>
-                        <option value="mvola">MVola</option>
-                        <option value="orange_money">Orange Money</option>
-                        <option value="airtel_money">Airtel Money</option>
-                    </select>
-                </div>
-                <div class="sm:col-span-3">
-                    <label for="seller-phone" class="{{ $labelClass }}">Numéro Mobile Money</label>
-                    <input id="seller-phone" name="phone" type="tel" inputmode="tel" required autocomplete="tel" placeholder="034 00 000 00" class="{{ $inputClass }}">
-                </div>
-            </div>
-
-            <div>
-                <label for="seller-domain" class="{{ $labelClass }}">Domaine d'expertise</label>
-                <input id="seller-domain" name="domain" type="text" required placeholder="Ex. Mathématiques, Droit OHADA, Informatique…" class="{{ $inputClass }}">
-            </div>
-
-            <div>
-                <label for="seller-password" class="{{ $labelClass }}">Mot de passe</label>
-                <div class="relative" data-password-field>
-                    <input id="seller-password" name="password" type="password" required minlength="8" autocomplete="new-password" placeholder="8 caractères minimum" class="{{ $inputClass }} pr-11">
-                    <button type="button" data-toggle-password aria-label="Afficher le mot de passe" class="absolute inset-y-0 right-0 px-3 text-outline hover:text-primary">
-                        <span class="material-symbols-outlined text-lg" aria-hidden="true">visibility</span>
-                    </button>
-                </div>
-            </div>
-
-            <label class="flex items-start gap-2.5 text-body-sm font-body-sm text-on-surface-variant">
-                <input type="checkbox" name="terms" required class="{{ $checkClass }}">
-                <span>J'accepte les <a href="#" class="{{ $linkClass }}">Conditions Générales</a> et les conditions de rémunération des vendeurs.</span>
-            </label>
-
-            <p data-form-status role="status" class="hidden text-body-sm font-body-sm text-primary bg-primary-fixed rounded-lg px-3 py-2"></p>
-
-            <button type="submit" class="w-full inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-lg bg-secondary text-on-secondary font-label-lg text-label-lg hover:bg-secondary-container transition-colors active:scale-[0.98]">
-                <span>Créer mon compte vendeur</span>
-                <span class="material-symbols-outlined text-base" aria-hidden="true">arrow_forward</span>
+            <button type="button" data-modal-close aria-label="Fermer"
+                    class="absolute top-1/2 -translate-y-1/2 right-space-lg sm:right-space-xl text-on-surface-variant hover:text-primary hover:bg-surface-container-low p-1.5 rounded-lg transition-colors duration-150 group">
+                <span class="material-symbols-outlined text-xl group-hover:rotate-90 transition-transform duration-200" aria-hidden="true">close</span>
             </button>
-            <p class="text-body-sm font-body-sm text-outline text-center">Notre équipe examine votre profil avant la publication de vos ressources.</p>
-        </form>
-
-        <div class="mt-5 pt-4 border-t border-outline-variant/40 flex flex-col sm:flex-row items-center justify-between gap-2 text-body-sm font-body-sm text-on-surface-variant">
-            <span>Déjà inscrit ? <button type="button" data-modal-open="modal-login" class="{{ $linkClass }}">Connexion</button></span>
-            <span>Vous voulez apprendre ? <button type="button" data-modal-open="modal-register-buyer" class="{{ $linkClass }}">Compte étudiant</button></span>
         </div>
     </div>
-</dialog>
 
-{{-- ========================= INSCRIPTION CLIENT ========================= --}}
-<dialog id="modal-register-buyer" data-modal aria-labelledby="modal-register-buyer-title" class="{{ $dialogClass }}">
-    <div class="relative p-space-lg sm:p-space-xl border-t-4 border-primary-container">
-        <button type="button" data-modal-close aria-label="Fermer" class="{{ $closeClass }}">
-            <span class="material-symbols-outlined text-xl" aria-hidden="true">close</span>
-        </button>
+    <div class="px-space-lg sm:px-space-xl pt-space-lg pb-space-xl">
 
-        <div class="w-11 h-11 rounded-lg bg-primary-fixed text-primary-container flex items-center justify-center mb-4">
-            <span class="material-symbols-outlined text-2xl" aria-hidden="true">shopping_bag</span>
-        </div>
-        <h2 id="modal-register-buyer-title" class="text-headline-md font-headline-md text-primary">Créez votre compte gratuit</h2>
-        <p class="text-body-md font-body-md text-on-surface-variant mt-1 mb-5">Accédez aux cours, annales et vidéos d'enseignants certifiés et payez par Mobile Money.</p>
+        {{-- Sous-titre --}}
+        <p class="text-body-sm font-body-sm text-on-surface-variant text-center mb-space-lg" data-auth-subtitle>
+            L'excellence pédagogique certifiée &amp; commerce académique
+        </p>
 
-        <form method="POST" action="#" data-static-form class="flex flex-col gap-4">
-            @csrf
-            <input type="hidden" name="role" value="buyer">
-
-            <div>
-                <label for="buyer-name" class="{{ $labelClass }}">Nom complet</label>
-                <input id="buyer-name" name="name" type="text" required autocomplete="name" placeholder="Ex. Miora Rasoanaivo" class="{{ $inputClass }}">
-            </div>
-
-            <div>
-                <label for="buyer-email" class="{{ $labelClass }}">Adresse e-mail</label>
-                <input id="buyer-email" name="email" type="email" required autocomplete="email" placeholder="nom@exemple.mg" class="{{ $inputClass }}">
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                    <label for="buyer-phone" class="{{ $labelClass }}">Téléphone <span class="text-outline font-normal">(facultatif)</span></label>
-                    <input id="buyer-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="034 00 000 00" class="{{ $inputClass }}">
-                </div>
-                <div>
-                    <label for="buyer-level" class="{{ $labelClass }}">Votre niveau</label>
-                    <select id="buyer-level" name="level" required class="{{ $inputClass }}">
-                        <option value="">Choisir…</option>
-                        <option value="college">Collège</option>
-                        <option value="lycee">Lycée / Baccalauréat</option>
-                        <option value="universite">Université</option>
-                        <option value="pro">Formation professionnelle</option>
-                    </select>
-                </div>
-            </div>
-
-            <div>
-                <label for="buyer-password" class="{{ $labelClass }}">Mot de passe</label>
-                <div class="relative" data-password-field>
-                    <input id="buyer-password" name="password" type="password" required minlength="8" autocomplete="new-password" placeholder="8 caractères minimum" class="{{ $inputClass }} pr-11">
-                    <button type="button" data-toggle-password aria-label="Afficher le mot de passe" class="absolute inset-y-0 right-0 px-3 text-outline hover:text-primary">
-                        <span class="material-symbols-outlined text-lg" aria-hidden="true">visibility</span>
-                    </button>
-                </div>
-            </div>
-
-            <label class="flex items-start gap-2.5 text-body-sm font-body-sm text-on-surface-variant">
-                <input type="checkbox" name="terms" required class="{{ $checkClass }}">
-                <span>J'accepte les <a href="#" class="{{ $linkClass }}">Conditions Générales</a>.</span>
-            </label>
-
-            <p data-form-status role="status" class="hidden text-body-sm font-body-sm text-primary bg-primary-fixed rounded-lg px-3 py-2"></p>
-
-            <button type="submit" class="w-full inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-lg bg-primary-container text-on-primary font-label-lg text-label-lg hover:bg-primary transition-colors active:scale-[0.98]">
-                <span>Créer mon compte</span>
-                <span class="material-symbols-outlined text-base" aria-hidden="true">arrow_forward</span>
+        {{-- 1. Onglets Connexion / Inscription --}}
+        <div class="relative flex p-1 bg-surface-container-low rounded-lg border border-outline-variant/30 mb-space-lg" role="tablist">
+            <button type="button" role="tab" data-auth-tab="login" aria-controls="auth-panel-login" aria-selected="true"
+                    class="flex-1 py-2 text-center text-label-lg font-label-lg rounded-lg transition-all duration-200">
+                Connexion
             </button>
-        </form>
-
-        <div class="mt-5 pt-4 border-t border-outline-variant/40 flex flex-col sm:flex-row items-center justify-between gap-2 text-body-sm font-body-sm text-on-surface-variant">
-            <span>Déjà inscrit ? <button type="button" data-modal-open="modal-login" class="{{ $linkClass }}">Connexion</button></span>
-            <span>Enseignant ? <button type="button" data-modal-open="modal-register-seller" class="{{ $linkClass }}">Devenir vendeur</button></span>
-        </div>
-    </div>
-</dialog>
-
-{{-- ========================= CONNEXION (clients & vendeurs) ========================= --}}
-<dialog id="modal-login" data-modal aria-labelledby="modal-login-title" class="{{ $dialogClass }}">
-    <div class="relative p-space-lg sm:p-space-xl border-t-4 border-primary-container">
-        <button type="button" data-modal-close aria-label="Fermer" class="{{ $closeClass }}">
-            <span class="material-symbols-outlined text-xl" aria-hidden="true">close</span>
-        </button>
-
-        <div class="w-11 h-11 rounded-lg bg-primary-fixed text-primary-container flex items-center justify-center mb-4">
-            <span class="material-symbols-outlined text-2xl" aria-hidden="true">login</span>
-        </div>
-        <h2 id="modal-login-title" class="text-headline-md font-headline-md text-primary">Content de vous revoir</h2>
-        <p class="text-body-md font-body-md text-on-surface-variant mt-1 mb-5">Connectez-vous à votre compte, que vous soyez étudiant ou vendeur.</p>
-
-        <form method="POST" action="#" data-static-form class="flex flex-col gap-4">
-            @csrf
-
-            <div>
-                <label for="login-identifier" class="{{ $labelClass }}">E-mail ou téléphone</label>
-                <input id="login-identifier" name="identifier" type="text" required autocomplete="username" placeholder="nom@exemple.mg" class="{{ $inputClass }}">
-            </div>
-
-            <div>
-                <div class="flex items-center justify-between mb-1">
-                    <label for="login-password" class="text-label-md font-label-md text-on-surface">Mot de passe</label>
-                    <a href="#" class="text-body-sm font-body-sm {{ $linkClass }}">Mot de passe oublié ?</a>
-                </div>
-                <div class="relative" data-password-field>
-                    <input id="login-password" name="password" type="password" required autocomplete="current-password" placeholder="Votre mot de passe" class="{{ $inputClass }} pr-11">
-                    <button type="button" data-toggle-password aria-label="Afficher le mot de passe" class="absolute inset-y-0 right-0 px-3 text-outline hover:text-primary">
-                        <span class="material-symbols-outlined text-lg" aria-hidden="true">visibility</span>
-                    </button>
-                </div>
-            </div>
-
-            <label class="flex items-center gap-2.5 text-body-sm font-body-sm text-on-surface-variant">
-                <input type="checkbox" name="remember" class="rounded border-outline-variant text-primary-container focus:ring-primary-container">
-                <span>Rester connecté</span>
-            </label>
-
-            <p data-form-status role="status" class="hidden text-body-sm font-body-sm text-primary bg-primary-fixed rounded-lg px-3 py-2"></p>
-
-            <button type="submit" class="w-full inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-lg bg-primary-container text-on-primary font-label-lg text-label-lg hover:bg-primary transition-colors active:scale-[0.98]">
-                <span>Se connecter</span>
+            <button type="button" role="tab" data-auth-tab="register" aria-controls="auth-panel-register" aria-selected="false"
+                    class="flex-1 py-2 text-center text-label-lg font-label-lg rounded-lg transition-all duration-200">
+                Inscription
             </button>
-        </form>
+        </div>
 
-        <div class="mt-5 pt-4 border-t border-outline-variant/40">
-            <p class="text-body-sm font-body-sm text-on-surface-variant text-center mb-3">Pas encore de compte ?</p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <button type="button" data-modal-open="modal-register-buyer"
-                        class="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-primary-container text-primary-container font-label-md text-label-md hover:bg-primary-fixed transition-colors">
-                    <span class="material-symbols-outlined text-sm" aria-hidden="true">shopping_bag</span>
-                    <span>Je veux acheter</span>
+        {{-- 2. Sélecteur de profil --}}
+        <div class="mb-space-lg">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider">Sélectionnez votre profil</span>
+                <span data-auth-role-tag class="text-label-sm font-label-sm text-primary bg-primary-fixed px-2 py-0.5 rounded">Apprenant</span>
+            </div>
+            <div class="grid grid-cols-2 gap-3" role="radiogroup" aria-label="Profil d'utilisateur">
+                {{-- Acheteur / Étudiant --}}
+                <button type="button" role="radio" aria-checked="true" data-auth-role="student"
+                        class="relative flex flex-col text-left p-3 rounded-lg border-2 transition-all duration-150 cursor-pointer">
+                    <div class="flex items-center justify-between w-full mb-1.5">
+                        <span class="w-7 h-7 rounded bg-primary-fixed flex items-center justify-center text-primary-container">
+                            <span class="material-symbols-outlined text-lg" aria-hidden="true">school</span>
+                        </span>
+                        <span data-auth-role-check="student" class="w-4 h-4 rounded-full bg-primary-container items-center justify-center text-white flex">
+                            <span class="material-symbols-outlined text-[13px] font-bold" aria-hidden="true">check</span>
+                        </span>
+                    </div>
+                    <span class="text-label-md font-label-md font-bold text-primary">Acheteur / Étudiant</span>
+                    <span class="text-body-sm font-body-sm text-on-surface-variant text-[11px] leading-tight mt-0.5">Accéder aux cours, fiches PDF certifiées et vidéos</span>
                 </button>
-                <button type="button" data-modal-open="modal-register-seller"
-                        class="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-secondary text-secondary font-label-md text-label-md hover:bg-secondary-fixed transition-colors">
-                    <span class="material-symbols-outlined text-sm" aria-hidden="true">add_circle</span>
-                    <span>Je veux vendre</span>
+
+                {{-- Vendeur / Enseignant --}}
+                <button type="button" role="radio" aria-checked="false" data-auth-role="teacher"
+                        class="relative flex flex-col text-left p-3 rounded-lg border-2 transition-all duration-150 cursor-pointer">
+                    <div class="flex items-center justify-between w-full mb-1.5">
+                        <span class="w-7 h-7 rounded bg-secondary-fixed flex items-center justify-center text-secondary">
+                            <span class="material-symbols-outlined text-lg" aria-hidden="true">co_present</span>
+                        </span>
+                        <span data-auth-role-check="teacher" class="hidden w-4 h-4 rounded-full bg-secondary items-center justify-center text-white">
+                            <span class="material-symbols-outlined text-[13px] font-bold" aria-hidden="true">check</span>
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <span class="text-label-md font-label-md font-bold text-primary">Vendeur Pro</span>
+                        <span class="material-symbols-outlined icon-fill text-xs text-secondary" aria-hidden="true">verified</span>
+                    </div>
+                    <span class="text-body-sm font-body-sm text-on-surface-variant text-[11px] leading-tight mt-0.5">Publier, monétiser vos documents et masterclasses</span>
                 </button>
+            </div>
+        </div>
+
+        {{-- 3. Onglet Connexion --}}
+        <div id="auth-panel-login" data-auth-panel="login" class="space-y-4">
+
+            {{-- Bascule Téléphone / E-mail --}}
+            <div class="flex items-center gap-2 p-1 bg-surface-container rounded-lg border border-outline-variant/30 text-body-sm font-body-sm">
+                <button type="button" data-login-method="phone" aria-selected="true"
+                        class="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-label-md font-label-md transition-colors">
+                    <span class="material-symbols-outlined text-base" aria-hidden="true">smartphone</span>
+                    <span>Numéro Mobile</span>
+                </button>
+                <button type="button" data-login-method="email" aria-selected="false"
+                        class="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-label-md font-label-md transition-colors">
+                    <span class="material-symbols-outlined text-base" aria-hidden="true">alternate_email</span>
+                    <span>E-mail &amp; mot de passe</span>
+                </button>
+            </div>
+
+            <form method="POST" action="#" data-static-form class="space-y-3.5">
+                @csrf
+                <input type="hidden" name="role" data-auth-role-input>
+
+                {{-- Téléphone --}}
+                <div data-login-field="phone">
+                    <label for="login-phone" class="{{ $labelClass }}">Numéro Mobile Money (Madagascar)</label>
+                    <div class="{{ $fieldWrap }}">
+                        <span class="inline-flex items-center px-3 bg-surface-container-low border-r border-outline-variant/40 text-label-md font-label-md text-primary font-bold">+261</span>
+                        <input id="login-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="34 00 000 00" class="{{ $inputClass }}">
+                        <span class="pr-3 text-label-sm font-label-sm text-on-surface-variant whitespace-nowrap hidden sm:inline">MVola · Orange · Airtel</span>
+                    </div>
+                </div>
+
+                {{-- E-mail --}}
+                <div data-login-field="email" class="hidden">
+                    <label for="login-email" class="{{ $labelClass }}">Adresse électronique</label>
+                    <div class="{{ $fieldWrap }}">
+                        <span class="pl-3 text-outline material-symbols-outlined text-lg" aria-hidden="true">mail</span>
+                        <input id="login-email" name="email" type="email" autocomplete="email" placeholder="votre.nom@institution.mg" class="{{ $inputClass }}">
+                    </div>
+                </div>
+
+                {{-- Mot de passe --}}
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <label for="login-password" class="text-label-sm font-label-sm text-primary">Mot de passe</label>
+                        <a href="#" class="text-label-sm font-label-sm text-secondary hover:underline">Mot de passe oublié ?</a>
+                    </div>
+                    <div class="{{ $fieldWrap }}" data-password-field>
+                        <span class="pl-3 text-outline material-symbols-outlined text-lg" aria-hidden="true">lock</span>
+                        <input id="login-password" name="password" type="password" autocomplete="current-password" placeholder="••••••••••••" class="{{ $inputClass }}">
+                        <button type="button" data-toggle-password aria-label="Afficher le mot de passe" class="p-2 text-outline hover:text-primary transition-colors">
+                            <span class="material-symbols-outlined text-lg" aria-hidden="true">visibility</span>
+                        </button>
+                    </div>
+                </div>
+
+                <p data-form-status role="status" class="hidden text-body-sm font-body-sm text-primary bg-primary-fixed rounded-lg px-3 py-2"></p>
+
+                <button type="submit" class="w-full mt-1 py-2.5 px-space-md bg-secondary hover:bg-secondary-container active:scale-[0.99] text-on-secondary font-label-lg text-label-lg rounded-lg transition-all duration-150 flex items-center justify-center gap-2 shadow-sm">
+                    <span>Se connecter</span>
+                    <span class="material-symbols-outlined text-lg" aria-hidden="true">arrow_forward</span>
+                </button>
+            </form>
+
+            {{-- Connexion rapide --}}
+            <div class="relative my-4 text-center">
+                <div class="absolute inset-0 flex items-center" aria-hidden="true"><div class="w-full border-t border-outline-variant/30"></div></div>
+                <span class="relative bg-surface-container-lowest px-3 text-label-sm font-label-sm text-outline">ou connexion instantanée</span>
+            </div>
+            <button type="button" class="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg border border-outline-variant/60 hover:bg-surface-container-low transition-colors duration-150 text-label-md font-label-md text-primary">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.9C6.2 7.1 8.9 5 12 5z" fill="#EA4335"></path>
+                    <path d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z" fill="#4285F4"></path>
+                    <path d="M5.3 14.7c-.2-.7-.4-1.5-.4-2.4 0-.8.2-1.6.4-2.4L1.6 7.4C.6 9.4 0 11.6 0 14s.6 4.6 1.6 6.6l3.7-3.9z" fill="#FBBC05"></path>
+                    <path d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2.1-6.7-5.3L1.6 16c1.9 3.8 5.8 7 10.4 7z" fill="#34A853"></path>
+                </svg>
+                <span>Continuer avec Google</span>
+            </button>
+        </div>
+
+        {{-- 4. Onglet Inscription --}}
+        <div id="auth-panel-register" data-auth-panel="register" class="space-y-3.5 hidden">
+
+            {{-- Bandeau garantie vendeur (visible seulement si profil « Vendeur Pro ») --}}
+            <div data-auth-teacher-banner class="hidden p-2.5 bg-surface-container-low rounded-lg border border-outline-variant/30 flex items-start gap-2.5">
+                <span class="material-symbols-outlined icon-fill text-primary-container text-lg shrink-0 mt-0.5" aria-hidden="true">verified_user</span>
+                <p class="text-[11px] leading-relaxed text-on-surface-variant font-body-sm">
+                    <strong class="text-primary font-label-sm block">Rémunération garantie pour vendeurs :</strong>
+                    Validation rapide de votre profil enseignant et reversement direct par <span class="font-bold text-primary">MVola</span>, <span class="font-bold text-primary">Orange Money</span> ou <span class="font-bold text-primary">Airtel Money</span>.
+                </p>
+            </div>
+
+            <form method="POST" action="#" data-static-form class="space-y-3">
+                @csrf
+                <input type="hidden" name="role" data-auth-role-input>
+
+                <div>
+                    <label for="reg-fullname" class="{{ $labelClass }}">Nom complet ou titre académique</label>
+                    <div class="{{ $fieldWrap }}">
+                        <span class="pl-3 text-outline material-symbols-outlined text-lg" aria-hidden="true">badge</span>
+                        <input id="reg-fullname" name="name" type="text" required autocomplete="name" placeholder="Ex. Prof. Solofo Randriamahaly" class="{{ $inputClass }}">
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label for="reg-phone" class="text-label-sm font-label-sm text-primary">Numéro Mobile Money <span class="font-normal text-on-surface-variant">(requis)</span></label>
+                        <span class="text-[10px] text-secondary font-bold uppercase">MVola / Orange / Airtel</span>
+                    </div>
+                    <div class="{{ $fieldWrap }}">
+                        <span class="inline-flex items-center px-3 bg-surface-container-low border-r border-outline-variant/40 text-label-md font-label-md text-primary font-bold">+261</span>
+                        <input id="reg-phone" name="phone" type="tel" inputmode="tel" required autocomplete="tel-national" placeholder="34 12 345 67" class="{{ $inputClass }}">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="reg-email" class="{{ $labelClass }}">Courriel de correspondance</label>
+                    <div class="{{ $fieldWrap }}">
+                        <span class="pl-3 text-outline material-symbols-outlined text-lg" aria-hidden="true">mail</span>
+                        <input id="reg-email" name="email" type="email" required autocomplete="email" placeholder="contact@domaine.mg" class="{{ $inputClass }}">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="reg-password" class="{{ $labelClass }}">Mot de passe sécurisé</label>
+                    <div class="{{ $fieldWrap }}" data-password-field>
+                        <span class="pl-3 text-outline material-symbols-outlined text-lg" aria-hidden="true">lock</span>
+                        <input id="reg-password" name="password" type="password" required minlength="8" autocomplete="new-password" placeholder="8 caractères min. (lettres, chiffres)" class="{{ $inputClass }}">
+                        <button type="button" data-toggle-password aria-label="Afficher le mot de passe" class="p-2 text-outline hover:text-primary transition-colors">
+                            <span class="material-symbols-outlined text-lg" aria-hidden="true">visibility</span>
+                        </button>
+                    </div>
+                </div>
+
+                <label class="flex items-start gap-2.5 cursor-pointer pt-1">
+                    <input type="checkbox" name="terms" required class="mt-1 h-4 w-4 rounded border-outline-variant text-primary-container focus:ring-primary-container/20">
+                    <span class="text-body-sm font-body-sm text-on-surface-variant text-[11px] leading-tight">
+                        J'accepte sans réserve les <a href="#" class="{{ $linkClass }}">Conditions Générales</a>, la politique de protection des droits d'auteur et la <a href="#" class="{{ $linkClass }}">Charte Pédagogique</a> de Tafely Kôrsy.
+                    </span>
+                </label>
+
+                <p data-form-status role="status" class="hidden text-body-sm font-body-sm text-primary bg-primary-fixed rounded-lg px-3 py-2"></p>
+
+                <button type="submit" class="w-full mt-1 py-2.5 px-space-md bg-primary-container hover:bg-primary active:scale-[0.99] text-on-primary font-label-lg text-label-lg rounded-lg transition-all duration-150 flex items-center justify-center gap-2 shadow-sm">
+                    <span>Créer mon compte</span>
+                    <span class="material-symbols-outlined text-lg" aria-hidden="true">verified</span>
+                </button>
+            </form>
+        </div>
+
+        {{-- 5. Pied de modale --}}
+        <div class="mt-space-lg pt-3 border-t border-outline-variant/30 flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
+            <p class="text-body-sm font-body-sm text-on-surface-variant" data-auth-footer-switch>
+                <span>Nouveau sur Tafely Kôrsy ?</span>
+                <button type="button" data-auth-tab="register" class="text-secondary font-bold hover:underline ml-1">Créer un compte</button>
+            </p>
+            <div class="flex items-center gap-3 text-label-sm font-label-sm text-outline">
+                <a href="{{ url('/') }}#faq" class="hover:text-primary transition-colors flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm" aria-hidden="true">help</span>
+                    <span>Support &amp; FAQ</span>
+                </a>
             </div>
         </div>
     </div>

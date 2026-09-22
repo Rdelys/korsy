@@ -19,11 +19,11 @@
     <meta property="og:title" content="@yield('title', 'Tafely Kôrsy')">
     <meta property="og:description" content="@yield('meta_description', 'Tafely Kôrsy : cours, documents PDF et vidéos d\'enseignants certifiés à Madagascar.')">
     <meta property="og:url" content="{{ url()->current() }}">
-    <meta property="og:image" content="@yield('og_image', asset('images/og-cover.png'))">
+    <meta property="og:image" content="@yield('og_image', asset('images/og-cover.jpg'))">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="@yield('title', 'Tafely Kôrsy')">
     <meta name="twitter:description" content="@yield('meta_description', 'Tafely Kôrsy : cours, documents PDF et vidéos d\'enseignants certifiés à Madagascar.')">
-    <meta name="twitter:image" content="@yield('og_image', asset('images/og-cover.png'))">
+    <meta name="twitter:image" content="@yield('og_image', asset('images/og-cover.jpg'))">
 
     {{-- Google Fonts --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -201,16 +201,16 @@
                 @guest
                     {{-- Visiteur non connecté : 3 boutons --}}
                     <div class="hidden lg:flex items-center gap-2">
-                        <button type="button" data-modal-open="modal-login"
+                        <button type="button" data-modal-open="modal-auth" data-auth-mode="login"
                                 class="px-3.5 py-1.5 rounded-lg border border-outline-variant text-primary font-label-md text-label-md hover:bg-surface-container-low transition-colors">
                             Connexion
                         </button>
-                        <button type="button" data-modal-open="modal-register-buyer"
+                        <button type="button" data-modal-open="modal-auth" data-auth-mode="register" data-auth-role="student"
                                 class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-primary-container text-on-primary font-label-md text-label-md hover:bg-primary transition-colors active:scale-[0.98]">
                             <span class="material-symbols-outlined text-sm" aria-hidden="true">shopping_bag</span>
                             <span>Acheter un cours</span>
                         </button>
-                        <button type="button" data-modal-open="modal-register-seller"
+                        <button type="button" data-modal-open="modal-auth" data-auth-mode="register" data-auth-role="teacher"
                                 class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-secondary text-on-secondary font-label-md text-label-md hover:bg-secondary-container transition-colors active:scale-[0.98]">
                             <span class="material-symbols-outlined text-sm" aria-hidden="true">add_circle</span>
                             <span>Vendre un cours</span>
@@ -218,7 +218,7 @@
                     </div>
 
                     {{-- Mobile / tablette : seul « Connexion » reste visible, le reste est dans le menu --}}
-                    <button type="button" data-modal-open="modal-login"
+                    <button type="button" data-modal-open="modal-auth" data-auth-mode="login"
                             class="lg:hidden px-3 py-1.5 rounded-lg border border-outline-variant text-primary font-label-md text-label-md hover:bg-surface-container-low transition-colors">
                         Connexion
                     </button>
@@ -269,17 +269,17 @@
 
                 @guest
                     <div class="flex flex-col gap-2.5">
-                        <button type="button" data-modal-open="modal-register-buyer"
+                        <button type="button" data-modal-open="modal-auth" data-auth-mode="register" data-auth-role="student"
                                 class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-lg bg-primary-container text-on-primary font-label-lg text-label-lg hover:bg-primary transition-colors active:scale-[0.98]">
                             <span class="material-symbols-outlined text-base" aria-hidden="true">shopping_bag</span>
                             <span>Acheter un cours</span>
                         </button>
-                        <button type="button" data-modal-open="modal-register-seller"
+                        <button type="button" data-modal-open="modal-auth" data-auth-mode="register" data-auth-role="teacher"
                                 class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-lg bg-secondary text-on-secondary font-label-lg text-label-lg hover:bg-secondary-container transition-colors active:scale-[0.98]">
                             <span class="material-symbols-outlined text-base" aria-hidden="true">add_circle</span>
                             <span>Vendre un cours</span>
                         </button>
-                        <button type="button" data-modal-open="modal-login"
+                        <button type="button" data-modal-open="modal-auth" data-auth-mode="login"
                                 class="inline-flex items-center justify-center px-3.5 py-2.5 rounded-lg border border-outline-variant text-primary font-label-lg text-label-lg hover:bg-surface-container-low transition-colors">
                             Connexion
                         </button>
@@ -389,10 +389,11 @@
 
             function openModal(id) {
                 var dlg = document.getElementById(id);
-                if (!dlg) return;
+                if (!dlg) return null;
                 openDialogs().forEach(function (d) { d.close(); });
                 if (typeof dlg.showModal === 'function') { dlg.showModal(); } else { dlg.setAttribute('open', ''); }
                 root.classList.add('overflow-hidden');
+                return dlg;
             }
 
             document.querySelectorAll('dialog[data-modal]').forEach(function (dlg) {
@@ -401,14 +402,122 @@
                 });
             });
 
+            /* ---------- Modale d'authentification unique (onglets + profil) ---------- */
+            var authModal = document.getElementById('modal-auth');
+
+            function setAuthTab(mode) {
+                if (!authModal) return;
+                var isLogin = mode !== 'register';
+
+                authModal.querySelectorAll('[data-auth-tab]').forEach(function (tab) {
+                    var active = tab.getAttribute('data-auth-tab') === (isLogin ? 'login' : 'register');
+                    tab.setAttribute('aria-selected', active ? 'true' : 'false');
+                    tab.classList.toggle('bg-surface-container-lowest', active);
+                    tab.classList.toggle('text-primary', active);
+                    tab.classList.toggle('shadow-sm', active);
+                    tab.classList.toggle('font-bold', active);
+                    tab.classList.toggle('text-on-surface-variant', !active);
+                });
+
+                var panelLogin = document.getElementById('auth-panel-login');
+                var panelRegister = document.getElementById('auth-panel-register');
+                if (panelLogin) panelLogin.classList.toggle('hidden', !isLogin);
+                if (panelRegister) panelRegister.classList.toggle('hidden', isLogin);
+
+                var subtitle = authModal.querySelector('[data-auth-subtitle]');
+                if (subtitle) {
+                    subtitle.textContent = isLogin
+                        ? "L'excellence pédagogique certifiée & commerce académique"
+                        : 'Rejoignez la première communauté académique numérique à Madagascar';
+                }
+
+                var footer = authModal.querySelector('[data-auth-footer-switch]');
+                if (footer) {
+                    footer.innerHTML = isLogin
+                        ? '<span>Nouveau sur Tafely Kôrsy\u00a0?</span> <button type="button" data-auth-tab="register" class="text-secondary font-bold hover:underline ml-1">Créer un compte</button>'
+                        : '<span>Déjà inscrit sur la plateforme\u00a0?</span> <button type="button" data-auth-tab="login" class="text-secondary font-bold hover:underline ml-1">Se connecter</button>';
+                }
+            }
+
+            function setAuthRole(role) {
+                if (!authModal) return;
+                var isStudent = role !== 'teacher';
+
+                authModal.querySelectorAll('[data-auth-role]').forEach(function (btn) {
+                    var mine = btn.getAttribute('data-auth-role') === (isStudent ? 'student' : 'teacher');
+                    var accent = btn.getAttribute('data-auth-role') === 'teacher' ? 'secondary' : 'primary-container';
+                    var tint = btn.getAttribute('data-auth-role') === 'teacher' ? 'bg-secondary-fixed/40' : 'bg-primary-fixed/40';
+                    btn.setAttribute('aria-checked', mine ? 'true' : 'false');
+                    btn.classList.toggle('border-' + accent, mine);
+                    btn.classList.toggle(tint, mine);
+                    btn.classList.toggle('border-outline-variant/40', !mine);
+                });
+
+                var checkStudent = authModal.querySelector('[data-auth-role-check="student"]');
+                var checkTeacher = authModal.querySelector('[data-auth-role-check="teacher"]');
+                if (checkStudent) { checkStudent.classList.toggle('hidden', !isStudent); checkStudent.classList.toggle('flex', isStudent); }
+                if (checkTeacher) { checkTeacher.classList.toggle('hidden', isStudent); checkTeacher.classList.toggle('flex', !isStudent); }
+
+                var tag = authModal.querySelector('[data-auth-role-tag]');
+                if (tag) {
+                    tag.textContent = isStudent ? 'Apprenant' : 'Vendeur Certifié';
+                    tag.className = isStudent
+                        ? 'text-label-sm font-label-sm text-primary bg-primary-fixed px-2 py-0.5 rounded'
+                        : 'text-label-sm font-label-sm text-on-secondary bg-secondary px-2 py-0.5 rounded font-bold';
+                }
+
+                var banner = authModal.querySelector('[data-auth-teacher-banner]');
+                if (banner) banner.classList.toggle('hidden', isStudent);
+
+                authModal.querySelectorAll('[data-auth-role-input]').forEach(function (input) {
+                    input.value = isStudent ? 'student' : 'teacher';
+                });
+            }
+
+            function setLoginMethod(method) {
+                if (!authModal) return;
+                var isPhone = method !== 'email';
+
+                authModal.querySelectorAll('[data-login-method]').forEach(function (btn) {
+                    var active = btn.getAttribute('data-login-method') === (isPhone ? 'phone' : 'email');
+                    btn.setAttribute('aria-selected', active ? 'true' : 'false');
+                    btn.classList.toggle('bg-surface-container-lowest', active);
+                    btn.classList.toggle('text-primary', active);
+                    btn.classList.toggle('font-bold', active);
+                    btn.classList.toggle('shadow-xs', active);
+                    btn.classList.toggle('text-on-surface-variant', !active);
+                });
+
+                var phoneField = authModal.querySelector('[data-login-field="phone"]');
+                var emailField = authModal.querySelector('[data-login-field="email"]');
+                if (phoneField) phoneField.classList.toggle('hidden', !isPhone);
+                if (emailField) emailField.classList.toggle('hidden', isPhone);
+            }
+
+            if (authModal) { setAuthTab('login'); setAuthRole('student'); setLoginMethod('phone'); }
+
             document.addEventListener('click', function (e) {
                 var opener = e.target.closest('[data-modal-open]');
                 if (opener) {
                     e.preventDefault();
                     setMenu(false);
-                    openModal(opener.getAttribute('data-modal-open'));
+                    var id = opener.getAttribute('data-modal-open');
+                    var dlg = openModal(id);
+                    if (dlg && dlg.id === 'modal-auth') {
+                        setAuthTab(opener.getAttribute('data-auth-mode') || 'login');
+                        setAuthRole(opener.getAttribute('data-auth-role') || 'student');
+                    }
                     return;
                 }
+
+                var tabBtn = e.target.closest('[data-auth-tab]');
+                if (tabBtn) { setAuthTab(tabBtn.getAttribute('data-auth-tab')); return; }
+
+                var roleBtn = e.target.closest('[data-auth-role]');
+                if (roleBtn) { setAuthRole(roleBtn.getAttribute('data-auth-role')); return; }
+
+                var methodBtn = e.target.closest('[data-login-method]');
+                if (methodBtn) { setLoginMethod(methodBtn.getAttribute('data-login-method')); return; }
 
                 var closer = e.target.closest('[data-modal-close]');
                 if (closer) {
