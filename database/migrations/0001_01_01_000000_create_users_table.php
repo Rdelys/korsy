@@ -14,8 +14,18 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+
+            // Statut du compte : 'client' (acheteur / étudiant) ou 'vendeur' (enseignant / expert).
+            $table->enum('role', ['client', 'vendeur'])->default('client')->index();
+
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
+
+            // Numéro Mobile Money au format international (+261XXXXXXXXX), utilisé pour la
+            // connexion par téléphone et, pour les vendeurs, pour le reversement des ventes.
+            $table->string('phone')->unique();
+            $table->timestamp('phone_verified_at')->nullable();
+
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();

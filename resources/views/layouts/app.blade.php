@@ -165,6 +165,12 @@
 
     <a href="#contenu" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:rounded-lg focus:bg-primary focus:text-on-primary">Aller au contenu principal</a>
 
+    @if (session('status') && ! session('open_modal'))
+        <div role="status" class="bg-primary-fixed text-primary text-body-sm font-body-sm text-center px-4 py-2">
+            {{ session('status') }}
+        </div>
+    @endif
+
     @php $isCatalogue = request()->is('catalogue*'); @endphp
 
     {{-- ===================== HEADER ===================== --}}
@@ -205,12 +211,12 @@
                                 class="px-3.5 py-1.5 rounded-lg border border-outline-variant text-primary font-label-md text-label-md hover:bg-surface-container-low transition-colors">
                             Connexion
                         </button>
-                        <button type="button" data-modal-open="modal-auth" data-auth-mode="register" data-auth-role="student"
+                        <button type="button" data-modal-open="modal-auth" data-auth-mode="register" data-auth-role="client"
                                 class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-primary-container text-on-primary font-label-md text-label-md hover:bg-primary transition-colors active:scale-[0.98]">
                             <span class="material-symbols-outlined text-sm" aria-hidden="true">shopping_bag</span>
                             <span>Acheter un cours</span>
                         </button>
-                        <button type="button" data-modal-open="modal-auth" data-auth-mode="register" data-auth-role="teacher"
+                        <button type="button" data-modal-open="modal-auth" data-auth-mode="register" data-auth-role="vendeur"
                                 class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-secondary text-on-secondary font-label-md text-label-md hover:bg-secondary-container transition-colors active:scale-[0.98]">
                             <span class="material-symbols-outlined text-sm" aria-hidden="true">add_circle</span>
                             <span>Vendre un cours</span>
@@ -225,15 +231,54 @@
                 @endguest
 
                 @auth
-                    {{-- Utilisateur connecté : notifications + avatar (jamais affichés aux visiteurs) --}}
+                    {{-- Utilisateur connecté : notifications + menu déroulant du profil (jamais affichés aux visiteurs) --}}
                     <button type="button" aria-label="Notifications"
                             class="p-2 rounded hover:bg-surface-container-low text-on-surface-variant transition-colors relative">
                         <span class="material-symbols-outlined text-xl" aria-hidden="true">notifications</span>
                         <span class="w-2 h-2 rounded-full bg-secondary absolute top-2 right-2"></span>
                     </button>
-                    <div class="w-9 h-9 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-lg text-label-lg flex-shrink-0 cursor-pointer" title="{{ auth()->user()->name }}">
-                        {{ mb_strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}
+
+                    {{-- Dropdown profil (desktop / tablette) --}}
+                    <div class="relative hidden sm:block">
+                        <button type="button" data-dropdown-toggle="user-menu" aria-haspopup="true" aria-expanded="false"
+                                class="flex items-center gap-1.5 p-1 pr-2 rounded-full hover:bg-surface-container-low transition-colors">
+                            <span class="w-9 h-9 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-lg text-label-lg flex-shrink-0" aria-hidden="true">
+                                {{ auth()->user()->initial() }}
+                            </span>
+                            <span class="material-symbols-outlined text-lg text-on-surface-variant" aria-hidden="true">expand_more</span>
+                        </button>
+
+                        <div id="user-menu" data-dropdown role="menu" aria-label="Menu du profil"
+                             class="hidden absolute right-0 top-full mt-2 w-64 bg-surface-container-lowest rounded-xl border border-outline-variant/40 shadow-lg overflow-hidden z-50">
+                            <div class="px-4 py-3 border-b border-outline-variant/20">
+                                <p class="text-label-lg font-label-lg text-primary truncate">{{ auth()->user()->name }}</p>
+                                <p class="text-body-sm font-body-sm text-on-surface-variant truncate">{{ auth()->user()->email }}</p>
+                                <span @class([
+                                    'inline-flex items-center mt-1.5 text-label-sm font-label-sm px-2 py-0.5 rounded font-bold',
+                                    'text-primary bg-primary-fixed' => auth()->user()->isClient(),
+                                    'text-on-secondary bg-secondary' => auth()->user()->isVendeur(),
+                                ])>{{ auth()->user()->roleLabel() }}</span>
+                            </div>
+                            <a href="{{ route('profile.show') }}" role="menuitem"
+                               class="flex items-center gap-2.5 px-4 py-2.5 text-body-md font-body-md text-on-surface hover:bg-surface-container-low transition-colors">
+                                <span class="material-symbols-outlined text-lg text-on-surface-variant" aria-hidden="true">person</span>
+                                <span>Mon profil</span>
+                            </a>
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" role="menuitem"
+                                        class="w-full flex items-center gap-2.5 px-4 py-2.5 text-body-md font-body-md text-secondary hover:bg-secondary-fixed/30 transition-colors border-t border-outline-variant/20">
+                                    <span class="material-symbols-outlined text-lg" aria-hidden="true">logout</span>
+                                    <span>Déconnexion</span>
+                                </button>
+                            </form>
+                        </div>
                     </div>
+
+                    {{-- Avatar seul (mobile) : ouvre le tiroir de menu, qui contient le dropdown profil --}}
+                    <span class="w-9 h-9 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-lg text-label-lg flex-shrink-0 sm:hidden" aria-hidden="true">
+                        {{ auth()->user()->initial() }}
+                    </span>
                 @endauth
 
                 {{-- Burger --}}
@@ -267,14 +312,43 @@
                     @endauth
                 </nav>
 
+                @auth
+                    {{-- Dropdown « Mon compte » (mobile / tablette) --}}
+                    <details class="group rounded-lg border border-outline-variant/40 open:border-primary-container/60">
+                        <summary class="flex items-center gap-2.5 px-3 py-2.5 cursor-pointer select-none">
+                            <span class="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-md text-label-md flex-shrink-0" aria-hidden="true">
+                                {{ auth()->user()->initial() }}
+                            </span>
+                            <span class="min-w-0 flex-1">
+                                <span class="block text-label-lg font-label-lg text-primary truncate">{{ auth()->user()->name }}</span>
+                                <span class="block text-body-sm font-body-sm text-on-surface-variant truncate">{{ auth()->user()->roleLabel() }}</span>
+                            </span>
+                            <span class="material-symbols-outlined text-on-surface-variant transition-transform group-open:rotate-180" aria-hidden="true">expand_more</span>
+                        </summary>
+                        <div class="border-t border-outline-variant/30 px-3 py-2 flex flex-col">
+                            <a href="{{ route('profile.show') }}" class="flex items-center gap-2.5 py-2.5 text-body-md font-body-md text-on-surface hover:text-primary transition-colors">
+                                <span class="material-symbols-outlined text-lg text-on-surface-variant" aria-hidden="true">person</span>
+                                <span>Mon profil</span>
+                            </a>
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="w-full flex items-center gap-2.5 py-2.5 text-body-md font-body-md text-secondary">
+                                    <span class="material-symbols-outlined text-lg" aria-hidden="true">logout</span>
+                                    <span>Déconnexion</span>
+                                </button>
+                            </form>
+                        </div>
+                    </details>
+                @endauth
+
                 @guest
                     <div class="flex flex-col gap-2.5">
-                        <button type="button" data-modal-open="modal-auth" data-auth-mode="register" data-auth-role="student"
+                        <button type="button" data-modal-open="modal-auth" data-auth-mode="register" data-auth-role="client"
                                 class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-lg bg-primary-container text-on-primary font-label-lg text-label-lg hover:bg-primary transition-colors active:scale-[0.98]">
                             <span class="material-symbols-outlined text-base" aria-hidden="true">shopping_bag</span>
                             <span>Acheter un cours</span>
                         </button>
-                        <button type="button" data-modal-open="modal-auth" data-auth-mode="register" data-auth-role="teacher"
+                        <button type="button" data-modal-open="modal-auth" data-auth-mode="register" data-auth-role="vendeur"
                                 class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-lg bg-secondary text-on-secondary font-label-lg text-label-lg hover:bg-secondary-container transition-colors active:scale-[0.98]">
                             <span class="material-symbols-outlined text-base" aria-hidden="true">add_circle</span>
                             <span>Vendre un cours</span>
@@ -405,9 +479,23 @@
             /* ---------- Modale d'authentification unique (onglets + profil) ---------- */
             var authModal = document.getElementById('modal-auth');
 
+            function setAuthStep(step) {
+                if (!authModal) return;
+                var isOtp = step === 'otp';
+
+                authModal.querySelectorAll('[data-auth-step]').forEach(function (block) {
+                    block.classList.toggle('hidden', block.getAttribute('data-auth-step') !== step);
+                });
+
+                var otpInput = authModal.querySelector('#otp-code');
+                if (isOtp && otpInput) { window.setTimeout(function () { otpInput.focus(); }, 50); }
+            }
+
             function setAuthTab(mode) {
                 if (!authModal) return;
                 var isLogin = mode !== 'register';
+
+                setAuthStep('form');
 
                 authModal.querySelectorAll('[data-auth-tab]').forEach(function (tab) {
                     var active = tab.getAttribute('data-auth-tab') === (isLogin ? 'login' : 'register');
@@ -441,36 +529,36 @@
 
             function setAuthRole(role) {
                 if (!authModal) return;
-                var isStudent = role !== 'teacher';
+                var isClient = role !== 'vendeur';
 
                 authModal.querySelectorAll('[data-auth-role]').forEach(function (btn) {
-                    var mine = btn.getAttribute('data-auth-role') === (isStudent ? 'student' : 'teacher');
-                    var accent = btn.getAttribute('data-auth-role') === 'teacher' ? 'secondary' : 'primary-container';
-                    var tint = btn.getAttribute('data-auth-role') === 'teacher' ? 'bg-secondary-fixed/40' : 'bg-primary-fixed/40';
+                    var mine = btn.getAttribute('data-auth-role') === (isClient ? 'client' : 'vendeur');
+                    var accent = btn.getAttribute('data-auth-role') === 'vendeur' ? 'secondary' : 'primary-container';
+                    var tint = btn.getAttribute('data-auth-role') === 'vendeur' ? 'bg-secondary-fixed/40' : 'bg-primary-fixed/40';
                     btn.setAttribute('aria-checked', mine ? 'true' : 'false');
                     btn.classList.toggle('border-' + accent, mine);
                     btn.classList.toggle(tint, mine);
                     btn.classList.toggle('border-outline-variant/40', !mine);
                 });
 
-                var checkStudent = authModal.querySelector('[data-auth-role-check="student"]');
-                var checkTeacher = authModal.querySelector('[data-auth-role-check="teacher"]');
-                if (checkStudent) { checkStudent.classList.toggle('hidden', !isStudent); checkStudent.classList.toggle('flex', isStudent); }
-                if (checkTeacher) { checkTeacher.classList.toggle('hidden', isStudent); checkTeacher.classList.toggle('flex', !isStudent); }
+                var checkClient = authModal.querySelector('[data-auth-role-check="client"]');
+                var checkVendeur = authModal.querySelector('[data-auth-role-check="vendeur"]');
+                if (checkClient) { checkClient.classList.toggle('hidden', !isClient); checkClient.classList.toggle('flex', isClient); }
+                if (checkVendeur) { checkVendeur.classList.toggle('hidden', isClient); checkVendeur.classList.toggle('flex', !isClient); }
 
                 var tag = authModal.querySelector('[data-auth-role-tag]');
                 if (tag) {
-                    tag.textContent = isStudent ? 'Apprenant' : 'Vendeur Certifié';
-                    tag.className = isStudent
+                    tag.textContent = isClient ? 'Apprenant' : 'Vendeur Certifié';
+                    tag.className = isClient
                         ? 'text-label-sm font-label-sm text-primary bg-primary-fixed px-2 py-0.5 rounded'
                         : 'text-label-sm font-label-sm text-on-secondary bg-secondary px-2 py-0.5 rounded font-bold';
                 }
 
-                var banner = authModal.querySelector('[data-auth-teacher-banner]');
-                if (banner) banner.classList.toggle('hidden', isStudent);
+                var banner = authModal.querySelector('[data-auth-vendeur-banner]');
+                if (banner) banner.classList.toggle('hidden', isClient);
 
                 authModal.querySelectorAll('[data-auth-role-input]').forEach(function (input) {
-                    input.value = isStudent ? 'student' : 'teacher';
+                    input.value = isClient ? 'client' : 'vendeur';
                 });
             }
 
@@ -494,7 +582,45 @@
                 if (emailField) emailField.classList.toggle('hidden', isPhone);
             }
 
-            if (authModal) { setAuthTab('login'); setAuthRole('student'); setLoginMethod('phone'); }
+            if (authModal) {
+                setAuthTab('login');
+                setAuthRole('client');
+                setLoginMethod('phone');
+
+                {{-- Ré-ouvre la modale au bon endroit après un aller-retour serveur
+                     (erreur de validation, étape OTP…) — voir les contrôleurs Auth\*. --}}
+                @if (session('open_modal') === 'auth')
+                    openModal('modal-auth');
+                    setAuthTab(@js(session('auth_tab', 'login')));
+                    setAuthRole(@js(session('auth_role', 'client')));
+                    @if (session('auth_step') === 'otp')
+                        setAuthStep('otp');
+                    @endif
+                @endif
+            }
+
+            /* ---------- Menu déroulant du profil (avatar) ---------- */
+            document.querySelectorAll('[data-dropdown-toggle]').forEach(function (toggle) {
+                var panel = document.getElementById(toggle.getAttribute('data-dropdown-toggle'));
+                if (!panel) return;
+
+                function setOpen(open) {
+                    panel.classList.toggle('hidden', !open);
+                    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+                }
+
+                toggle.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    setOpen(panel.classList.contains('hidden'));
+                });
+
+                document.addEventListener('click', function (e) {
+                    if (!panel.classList.contains('hidden') && !panel.contains(e.target) && e.target !== toggle) setOpen(false);
+                });
+                document.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape') setOpen(false);
+                });
+            });
 
             document.addEventListener('click', function (e) {
                 var opener = e.target.closest('[data-modal-open]');
@@ -505,7 +631,7 @@
                     var dlg = openModal(id);
                     if (dlg && dlg.id === 'modal-auth') {
                         setAuthTab(opener.getAttribute('data-auth-mode') || 'login');
-                        setAuthRole(opener.getAttribute('data-auth-role') || 'student');
+                        setAuthRole(opener.getAttribute('data-auth-role') || 'client');
                     }
                     return;
                 }
