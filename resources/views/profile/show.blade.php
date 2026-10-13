@@ -21,6 +21,14 @@
     $isVendeur = $user->isVendeur();
     $money     = fn ($n) => number_format($n, 0, ',', "\u{00A0}");
 
+    // Identité (RÉEL) : intitulé, ville, établissement et série/matière lus en base.
+    $headline   = $user->headline ?: ($isVendeur ? 'Enseignant sur Tafely Kôrsy' : 'Apprenant sur Tafely Kôrsy');
+    $city       = $user->city ?: 'Madagascar';
+    $shortLevel = $user->level ? \Illuminate\Support\Str::before($user->level, ' (') : null;
+    $schoolLine = $user->school
+        ? $user->school.(! $isVendeur && $shortLevel ? ' ('.$shortLevel.')' : '')
+        : (! $isVendeur ? $shortLevel : null);
+
     // Téléphone (RÉEL) : stocké en +261XXXXXXXXX, affiché « 34 12 345 67 ».
     $phoneLocal = preg_replace('/^\+?261/', '', (string) $user->phone);
     $phoneFmt   = preg_replace('/^(\d{2})(\d{2})(\d{3})(\d{2})$/', '$1 $2 $3 $4', $phoneLocal);
@@ -128,16 +136,20 @@
                         </span>
                     </div>
 
+                    {{-- Intitulé (RÉEL) --}}
                     <p class="text-body-md font-body-md text-primary font-medium flex items-center gap-1.5">
                         <span class="material-symbols-outlined text-secondary text-[18px]" aria-hidden="true">workspace_premium</span>
-                        {{-- STATIQUE --}}
-                        <span>{{ $isVendeur ? 'Professeur de Mathématiques & Physique — Préparation Baccalauréat C / D' : 'Préparation Baccalauréat Scientifique & Concours Polytech' }}</span>
+                        <span>{{ $headline }}</span>
                     </p>
 
                     <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-body-sm font-body-sm text-on-surface-variant">
-                        <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px] text-outline" aria-hidden="true">location_on</span>Antananarivo, Madagascar</span>
+                        {{-- Ville (RÉEL) --}}
+                        <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px] text-outline" aria-hidden="true">location_on</span>{{ $city }}</span>
                         <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px] text-outline" aria-hidden="true">calendar_today</span>{{ $isVendeur ? 'Vendeur' : 'Inscrit' }} depuis {{ ucfirst($user->created_at->translatedFormat('F Y')) }}</span>
-                        <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px] text-outline" aria-hidden="true">auto_stories</span>{{ $isVendeur ? 'Lycée Jean-Joseph Rabearivelo (enseignant)' : 'Lycée Jean-Joseph Rabearivelo (Série C)' }}</span>
+                        {{-- Établissement / série (RÉEL) --}}
+                        @if ($schoolLine)
+                            <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px] text-outline" aria-hidden="true">auto_stories</span>{{ $schoolLine }}</span>
+                        @endif
                     </div>
                 </div>
             </div>

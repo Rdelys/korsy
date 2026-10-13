@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Support\NormalizesMalagasyPhone;
+use App\Support\ProfileOptions;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -24,9 +25,10 @@ class UpdateProfileRequest extends FormRequest
 
     public function rules(): array
     {
-        $id = $this->user()->id;
+        $user = $this->user();
+        $id = $user->id;
 
-        return [
+        $rules = [
             'name' => ['required', 'string', 'min:2', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($id)],
             'phone' => [
@@ -34,7 +36,19 @@ class UpdateProfileRequest extends FormRequest
                 'regex:/^\+261(32|33|34|37|38)\d{7}$/',
                 Rule::unique('users', 'phone')->ignore($id),
             ],
+            'headline' => ['nullable', 'string', 'max:150'],
+            'school' => ['nullable', 'string', 'max:255'],
+            'city' => ['nullable', 'string', 'max:100'],
+            'level' => ['nullable', 'string', Rule::in(ProfileOptions::levelsFor($user->isVendeur()))],
         ];
+
+        // La présentation n'existe que pour les vendeurs : pour un apprenant,
+        // le champ n'est pas validé donc absent de validated() (non modifiable).
+        if ($user->isVendeur()) {
+            $rules['bio'] = ['nullable', 'string', 'max:400'];
+        }
+
+        return $rules;
     }
 
     public function messages(): array
@@ -47,6 +61,10 @@ class UpdateProfileRequest extends FormRequest
             'phone.required' => 'Le numéro Mobile Money est requis.',
             'phone.regex' => 'Numéro invalide. Utilisez un numéro MVola, Orange Money ou Airtel Money malgache.',
             'phone.unique' => 'Ce numéro est déjà associé à un autre compte.',
+            'headline.max' => 'L\'intitulé ne doit pas dépasser 150 caractères.',
+            'school.max' => 'Le nom de l\'établissement est trop long.',
+            'level.in' => 'Valeur non valide pour ce champ.',
+            'bio.max' => 'La présentation ne doit pas dépasser 400 caractères.',
         ];
     }
 }

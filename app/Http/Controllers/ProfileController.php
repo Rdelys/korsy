@@ -29,11 +29,9 @@ class ProfileController extends Controller
         $user = $request->user();
         $user->fill($request->validated());
 
-        // Une nouvelle adresse e-mail n'est plus considérée comme vérifiée.
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;
         }
-        // Idem pour un nouveau numéro Mobile Money.
         if ($user->isDirty('phone')) {
             $user->phone_verified_at = null;
         }

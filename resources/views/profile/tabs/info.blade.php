@@ -1,3 +1,10 @@
+@php
+    use App\Support\ProfileOptions;
+
+    $levelOptions = ProfileOptions::levelsFor($isVendeur);
+    $currentLevel = old('level', $user->level);
+@endphp
+
 {{-- SECTION A : informations personnelles / professionnelles & contact --}}
 <div class="{{ $card }}">
     <div class="{{ $cardHead }}">
@@ -21,11 +28,18 @@
         </div>
     @endif
 
+    @if (session('status') && session('profile_tab') === 'info')
+        <div class="flex items-start gap-2 text-body-sm font-body-sm text-[#047857] bg-[#10b981]/10 rounded-lg px-3 py-2.5 mb-space-lg" role="status">
+            <span class="material-symbols-outlined text-lg flex-shrink-0" aria-hidden="true">check_circle</span>
+            <span>{{ session('status') }}</span>
+        </div>
+    @endif
+
     <form id="profile-form" method="POST" action="{{ route('profile.update') }}" class="grid grid-cols-1 md:grid-cols-2 gap-space-lg">
         @csrf
         @method('PUT')
 
-        {{-- Nom (RÉEL) --}}
+        {{-- Nom --}}
         <div class="space-y-1.5">
             <label for="pf-name" class="{{ $label }}">{{ $isVendeur ? 'Nom complet ou titre académique' : 'Nom complet de l\'apprenant' }} <span class="text-secondary">*</span></label>
             <div class="relative">
@@ -35,7 +49,7 @@
             @error('name') <p class="{{ $errText }}">{{ $message }}</p> @enderror
         </div>
 
-        {{-- E-mail (RÉEL) --}}
+        {{-- E-mail --}}
         <div class="space-y-1.5">
             <label for="pf-email" class="{{ $label }}">Adresse électronique <span class="text-secondary">*</span></label>
             <div class="relative">
@@ -45,53 +59,67 @@
             @error('email') <p class="{{ $errText }}">{{ $message }}</p> @enderror
         </div>
 
-        {{-- STATIQUE : établissement --}}
+        {{-- Intitulé --}}
+        <div class="space-y-1.5 md:col-span-2">
+            <label for="pf-headline" class="{{ $label }}">{{ $isVendeur ? 'Intitulé professionnel' : 'Objectif / Préparation' }}</label>
+            <div class="relative">
+                <span class="{{ $ico }}" aria-hidden="true">workspace_premium</span>
+                <input id="pf-headline" name="headline" type="text" maxlength="150"
+                       value="{{ old('headline', $user->headline) }}"
+                       placeholder="{{ $isVendeur ? 'Ex. Professeur de Mathématiques — Préparation Bac C / D' : 'Ex. Préparation Baccalauréat Scientifique' }}"
+                       class="{{ $input }}">
+            </div>
+            @error('headline') <p class="{{ $errText }}">{{ $message }}</p> @enderror
+        </div>
+
+        {{-- Établissement --}}
         <div class="space-y-1.5">
-            <label for="pf-school" class="{{ $label }}">{{ $isVendeur ? 'Établissement d\'exercice' : 'Établissement scolaire / Université' }} <span class="text-secondary">*</span></label>
+            <label for="pf-school" class="{{ $label }}">{{ $isVendeur ? 'Établissement d\'exercice' : 'Établissement scolaire / Université' }}</label>
             <div class="relative">
                 <span class="{{ $ico }}" aria-hidden="true">apartment</span>
-                <input id="pf-school" type="text" data-static value="Lycée Jean-Joseph Rabearivelo, Antananarivo" class="{{ $input }}">
+                <input id="pf-school" name="school" type="text" maxlength="255" value="{{ old('school', $user->school) }}" class="{{ $input }}">
             </div>
+            @error('school') <p class="{{ $errText }}">{{ $message }}</p> @enderror
         </div>
 
-        {{-- STATIQUE : série (acheteur) / matière (vendeur) --}}
+        {{-- Série (apprenant) / Matière (vendeur) --}}
         <div class="space-y-1.5">
-            <label for="pf-level" class="{{ $label }}">{{ $isVendeur ? 'Matière principale enseignée' : 'Série / Niveau d\'études actuel' }} <span class="text-secondary">*</span></label>
+            <label for="pf-level" class="{{ $label }}">{{ $isVendeur ? 'Matière principale enseignée' : 'Série / Niveau d\'études actuel' }}</label>
             <div class="relative">
                 <span class="{{ $ico }}" aria-hidden="true">{{ $isVendeur ? 'menu_book' : 'functions' }}</span>
-                <select id="pf-level" data-static class="{{ $input }}">
-                    @if ($isVendeur)
-                        <option selected>Mathématiques</option>
-                        <option>Physique-Chimie</option>
-                        <option>SVT</option>
-                        <option>Français &amp; Littérature</option>
-                        <option>Philosophie</option>
-                        <option>Histoire-Géographie</option>
-                        <option>Anglais</option>
-                        <option>Informatique</option>
-                    @else
-                        <option selected>Série Scientifique C (Maths &amp; Physiques)</option>
-                        <option>Série Scientifique D (SVT &amp; Chimie)</option>
-                        <option>Série Littéraire A1 / A2</option>
-                        <option>Série Technique / Tertiaire</option>
-                        <option>Étudiant Supérieur / Faculté des Sciences</option>
-                    @endif
+                <select id="pf-level" name="level" class="{{ $input }}">
+                    <option value="" @selected(! $currentLevel)>— Choisir —</option>
+                    @foreach ($levelOptions as $opt)
+                        <option value="{{ $opt }}" @selected($currentLevel === $opt)>{{ $opt }}</option>
+                    @endforeach
                 </select>
             </div>
+            @error('level') <p class="{{ $errText }}">{{ $message }}</p> @enderror
         </div>
 
-        {{-- STATIQUE : présentation (vendeur uniquement) --}}
+        {{-- Ville --}}
+        <div class="space-y-1.5 md:col-span-2">
+            <label for="pf-city" class="{{ $label }}">Ville</label>
+            <div class="relative">
+                <span class="{{ $ico }}" aria-hidden="true">location_on</span>
+                <input id="pf-city" name="city" type="text" maxlength="100" value="{{ old('city', $user->city) }}" placeholder="Ex. Antananarivo" class="{{ $input }}">
+            </div>
+            @error('city') <p class="{{ $errText }}">{{ $message }}</p> @enderror
+        </div>
+
+        {{-- Présentation (vendeur uniquement) --}}
         @if ($isVendeur)
             <div class="space-y-1.5 md:col-span-2">
                 <label for="pf-bio" class="{{ $label }}">Présentation de l'enseignant</label>
-                <textarea id="pf-bio" rows="3" data-static maxlength="400"
+                <textarea id="pf-bio" name="bio" rows="3" maxlength="400"
                           placeholder="Présentez votre parcours, vos classes et vos méthodes en quelques lignes…"
-                          class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-[16px] sm:text-body-md font-body-md text-primary focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container">Enseignant de mathématiques depuis 8 ans, spécialisé dans la préparation au Baccalauréat série C et D.</textarea>
+                          class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-[16px] sm:text-body-md font-body-md text-primary focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container">{{ old('bio', $user->bio) }}</textarea>
                 <p class="text-[12px] text-outline">400 caractères maximum. Visible sur vos fiches et masterclasses.</p>
+                @error('bio') <p class="{{ $errText }}">{{ $message }}</p> @enderror
             </div>
         @endif
 
-        {{-- Téléphone (RÉEL) --}}
+        {{-- Téléphone --}}
         <div class="space-y-1.5 md:col-span-2">
             <label for="pf-phone" class="{{ $label }}">
                 {{ $isVendeur ? 'Téléphone Mobile Money (reversement des gains)' : 'Téléphone mobile principal (Madagascar)' }} <span class="text-secondary">*</span>
@@ -109,9 +137,4 @@
             </p>
         </div>
     </form>
-
-    <p class="mt-space-lg text-[12px] text-outline flex items-start gap-1.5">
-        <span class="material-symbols-outlined text-[16px]" aria-hidden="true">info</span>
-        <span>Nom, e-mail et téléphone sont enregistrés. Les autres champs sont présentés à titre de démonstration et seront activés prochainement.</span>
-    </p>
 </div>
