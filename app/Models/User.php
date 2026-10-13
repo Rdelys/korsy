@@ -12,7 +12,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 #[Fillable(['name', 'role', 'phone', 'email', 'password',
-    'headline', 'school', 'level', 'city', 'bio',])]
+    'headline', 'school', 'level', 'city', 'bio'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -88,6 +88,15 @@ class User extends Authenticatable
     public function initial(): string
     {
         return mb_strtoupper(mb_substr($this->name, 0, 1));
+    }
+
+    /**
+     * URL publique de la photo de profil, ou null si l'utilisateur n'en a pas.
+     * (Fichier stocké sur le disque « public » : nécessite `php artisan storage:link`.)
+     */
+    public function avatarUrl(): ?string
+    {
+        return $this->avatar_path ? asset('storage/'.$this->avatar_path) : null;
     }
 
     /**

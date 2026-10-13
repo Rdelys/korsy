@@ -60,4 +60,11 @@ Route::middleware('auth')->group(function () {
     Route::put('/profil/mot-de-passe', [ProfileController::class, 'updatePassword'])
         ->name('profile.password')
         ->middleware('throttle:6,1');
+
+    // Photo de profil
+    Route::post('/profil/photo', [ProfileController::class, 'updateAvatar'])
+        ->name('profile.avatar')
+        ->middleware('throttle:10,1');
+    Route::delete('/profil/photo', [ProfileController::class, 'destroyAvatar'])
+        ->name('profile.avatar.destroy');
 });

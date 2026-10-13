@@ -240,24 +240,25 @@
 
                     {{-- Dropdown profil (desktop / tablette) --}}
                     <div class="relative hidden sm:block">
-                        <button type="button" data-dropdown-toggle="user-menu" aria-haspopup="true" aria-expanded="false"
+                        <button type="button" data-dropdown-toggle="user-menu" aria-haspopup="true" aria-expanded="false" aria-label="Menu du profil"
                                 class="flex items-center gap-1.5 p-1 pr-2 rounded-full hover:bg-surface-container-low transition-colors">
-                            <span class="w-9 h-9 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-lg text-label-lg flex-shrink-0" aria-hidden="true">
-                                {{ auth()->user()->initial() }}
-                            </span>
+                            <x-user-avatar :user="auth()->user()" size="w-9 h-9" />
                             <span class="material-symbols-outlined text-lg text-on-surface-variant" aria-hidden="true">expand_more</span>
                         </button>
 
                         <div id="user-menu" data-dropdown role="menu" aria-label="Menu du profil"
                              class="hidden absolute right-0 top-full mt-2 w-64 bg-surface-container-lowest rounded-xl border border-outline-variant/40 shadow-lg overflow-hidden z-50">
-                            <div class="px-4 py-3 border-b border-outline-variant/20">
-                                <p class="text-label-lg font-label-lg text-primary truncate">{{ auth()->user()->name }}</p>
-                                <p class="text-body-sm font-body-sm text-on-surface-variant truncate">{{ auth()->user()->email }}</p>
-                                <span @class([
-                                    'inline-flex items-center mt-1.5 text-label-sm font-label-sm px-2 py-0.5 rounded font-bold',
-                                    'text-primary bg-primary-fixed' => auth()->user()->isClient(),
-                                    'text-on-secondary bg-secondary' => auth()->user()->isVendeur(),
-                                ])>{{ auth()->user()->roleLabel() }}</span>
+                            <div class="px-4 py-3 border-b border-outline-variant/20 flex items-center gap-3">
+                                <x-user-avatar :user="auth()->user()" size="w-11 h-11" />
+                                <div class="min-w-0">
+                                    <p class="text-label-lg font-label-lg text-primary truncate">{{ auth()->user()->name }}</p>
+                                    <p class="text-body-sm font-body-sm text-on-surface-variant truncate">{{ auth()->user()->email }}</p>
+                                    <span @class([
+                                        'inline-flex items-center mt-1.5 text-label-sm font-label-sm px-2 py-0.5 rounded font-bold',
+                                        'text-primary bg-primary-fixed' => auth()->user()->isClient(),
+                                        'text-on-secondary bg-secondary' => auth()->user()->isVendeur(),
+                                    ])>{{ auth()->user()->roleLabel() }}</span>
+                                </div>
                             </div>
                             <a href="{{ route('profile.show') }}" role="menuitem"
                                class="flex items-center gap-2.5 px-4 py-2.5 text-body-md font-body-md text-on-surface hover:bg-surface-container-low transition-colors">
@@ -275,10 +276,8 @@
                         </div>
                     </div>
 
-                    {{-- Avatar seul (mobile) : ouvre le tiroir de menu, qui contient le dropdown profil --}}
-                    <span class="w-9 h-9 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-lg text-label-lg flex-shrink-0 sm:hidden" aria-hidden="true">
-                        {{ auth()->user()->initial() }}
-                    </span>
+                    {{-- Avatar seul (mobile) : le détail du compte est dans le tiroir de menu --}}
+                    <x-user-avatar :user="auth()->user()" size="w-9 h-9" class="sm:hidden" />
                 @endauth
 
                 {{-- Burger --}}
@@ -316,9 +315,7 @@
                     {{-- Dropdown « Mon compte » (mobile / tablette) --}}
                     <details class="group rounded-lg border border-outline-variant/40 open:border-primary-container/60">
                         <summary class="flex items-center gap-2.5 px-3 py-2.5 cursor-pointer select-none">
-                            <span class="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-md text-label-md flex-shrink-0" aria-hidden="true">
-                                {{ auth()->user()->initial() }}
-                            </span>
+                            <x-user-avatar :user="auth()->user()" size="w-8 h-8" text="text-label-md font-label-md" />
                             <span class="min-w-0 flex-1">
                                 <span class="block text-label-lg font-label-lg text-primary truncate">{{ auth()->user()->name }}</span>
                                 <span class="block text-body-sm font-body-sm text-on-surface-variant truncate">{{ auth()->user()->roleLabel() }}</span>
@@ -404,7 +401,7 @@
                     </div>
                     <div class="flex flex-col gap-space-xs">
                         <span class="text-label-md font-label-md font-bold text-on-primary uppercase tracking-wider mb-1">Sécurité &amp; Légal</span>
-                        <a href="#" class="text-primary-fixed-dim hover:text-on-primary transition-colors duration-150 text-body-sm font-body-sm">Paiements Sécurisés (Mvola, Orange Money, Airtel Money)</a>
+                        <a href="#" class="text-primary-fixed-dim hover:text-on-primary transition-colors duration-150 text-body-sm font-body-sm">Paiements Sécurisés (MVola, Orange Money)</a>
                         <a href="#" class="text-primary-fixed-dim hover:text-on-primary transition-colors duration-150 text-body-sm font-body-sm">Conditions Générales</a>
                         <a href="{{ url('/') }}#faq" class="text-primary-fixed-dim hover:text-on-primary transition-colors duration-150 text-body-sm font-body-sm">Support &amp; FAQ</a>
                     </div>
@@ -615,7 +612,7 @@
                 });
 
                 document.addEventListener('click', function (e) {
-                    if (!panel.classList.contains('hidden') && !panel.contains(e.target) && e.target !== toggle) setOpen(false);
+                    if (!panel.classList.contains('hidden') && !panel.contains(e.target) && !toggle.contains(e.target)) setOpen(false);
                 });
                 document.addEventListener('keydown', function (e) {
                     if (e.key === 'Escape') setOpen(false);

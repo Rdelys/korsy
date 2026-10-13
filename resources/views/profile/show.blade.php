@@ -50,6 +50,9 @@
         ?? ($errors->hasBag('password') && $errors->getBag('password')->any() ? 'security' : ($errors->any() ? 'info' : null));
     $startTab = $serverTab ?? 'info';
 
+    // Erreur éventuelle d'envoi de la photo de profil.
+    $avatarError = $errors->hasBag('avatar') ? $errors->getBag('avatar')->first('avatar') : null;
+
     // Indicateurs clés (STATIQUES).
     $metrics = $isVendeur
         ? [
@@ -98,13 +101,15 @@
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-space-lg pt-space-xs">
             <div class="flex flex-col sm:flex-row items-start sm:items-center gap-space-lg min-w-0">
 
-                {{-- Avatar (pas de photo en base : initiale) --}}
+                {{-- Avatar (RÉEL) : photo si elle existe, sinon initiale. Cliquable pour changer la photo. --}}
                 <div class="relative shrink-0">
-                    <span @class([
-                        'w-24 h-24 sm:w-28 sm:h-28 rounded-full ring-4 ring-surface-container-low shadow-sm flex items-center justify-center text-4xl font-headline-md font-bold text-on-primary',
-                        'bg-primary-container' => ! $isVendeur,
-                        'bg-secondary' => $isVendeur,
-                    ])>{{ $user->initial() }}</span>
+                    <label for="avatar-input" class="block cursor-pointer" title="Modifier la photo">
+                        <x-user-avatar :user="$user"
+                                       size="w-24 h-24 sm:w-28 sm:h-28"
+                                       text="text-4xl font-headline-md font-bold"
+                                       :bg="$isVendeur ? 'bg-secondary' : 'bg-primary-container'"
+                                       class="ring-4 ring-surface-container-low shadow-sm" />
+                    </label>
                     <div class="absolute -bottom-1 -right-1 bg-surface-container-lowest p-1 rounded-full shadow-sm"
                          title="{{ $user->email_verified_at ? 'E-mail vérifié' : 'E-mail non vérifié' }}">
                         <span class="material-symbols-outlined icon-fill text-[22px] {{ $user->email_verified_at ? 'text-on-tertiary-container' : 'text-outline' }}" aria-hidden="true">{{ $user->email_verified_at ? 'verified' : 'pending' }}</span>
@@ -149,16 +154,41 @@
                 </div>
             </div>
 
-            {{-- Actions rapides (STATIQUES) --}}
-            <div class="flex sm:flex-col gap-2 shrink-0 justify-end">
-                <button type="button" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg border border-outline-variant hover:bg-surface-container-low text-primary text-label-md font-label-md transition-colors active:scale-[0.98]">
-                    <span class="material-symbols-outlined text-[18px]" aria-hidden="true">photo_camera</span><span>Modifier la photo</span>
-                </button>
+            {{-- Actions rapides --}}
+            <div class="flex flex-wrap sm:flex-col gap-2 shrink-0 justify-end">
+                {{-- Photo de profil (RÉEL) : le fichier est envoyé dès qu'il est choisi --}}
+                <form method="POST" action="{{ route('profile.avatar') }}" enctype="multipart/form-data" class="contents">
+                    @csrf
+                    <input id="avatar-input" name="avatar" type="file" accept="image/png,image/jpeg,image/webp" class="sr-only"
+                           onchange="if (this.files[0] && this.files[0].size > 2097152) { alert('La photo ne doit pas dépasser 2 Mo.'); this.value = ''; return; } if (this.files[0]) { this.form.submit(); }">
+                    <label for="avatar-input" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg border border-outline-variant hover:bg-surface-container-low text-primary text-label-md font-label-md transition-colors active:scale-[0.98] cursor-pointer">
+                        <span class="material-symbols-outlined text-[18px]" aria-hidden="true">photo_camera</span><span>{{ $user->avatar_path ? 'Changer la photo' : 'Ajouter une photo' }}</span>
+                    </label>
+                </form>
+
+                @if ($user->avatar_path)
+                    <form method="POST" action="{{ route('profile.avatar.destroy') }}" class="contents">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg border border-outline-variant/60 hover:bg-secondary-fixed/30 text-secondary text-label-md font-label-md transition-colors active:scale-[0.98]">
+                            <span class="material-symbols-outlined text-[18px]" aria-hidden="true">delete</span><span>Supprimer la photo</span>
+                        </button>
+                    </form>
+                @endif
+
+                {{-- STATIQUE --}}
                 <button type="button" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg border border-outline-variant/60 hover:bg-surface-container-low text-on-surface-variant text-label-md font-label-md transition-colors active:scale-[0.98]">
                     <span class="material-symbols-outlined text-[18px]" aria-hidden="true">download</span><span>Exporter mes données</span>
                 </button>
             </div>
         </div>
+
+        @if ($avatarError)
+            <div class="flex items-start gap-2 text-body-sm font-body-sm text-on-error-container bg-error-container rounded-lg px-3 py-2.5 mt-space-md" role="alert">
+                <span class="material-symbols-outlined text-lg flex-shrink-0" aria-hidden="true">error</span>
+                <span>{{ $avatarError }}</span>
+            </div>
+        @endif
     </section>
 
     {{-- ============ 4. INDICATEURS CLÉS ============ --}}
