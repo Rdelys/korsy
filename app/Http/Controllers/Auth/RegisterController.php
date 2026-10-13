@@ -49,6 +49,7 @@ class RegisterController extends Controller
         session([
             'auth.otp.user_id' => $user->id,
             'auth.otp.remember' => false,
+            'auth.otp.context' => 'register',
         ]);
 
         return redirect()->back()->with([

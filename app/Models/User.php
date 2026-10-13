@@ -88,4 +88,12 @@ class User extends Authenticatable
     {
         return mb_strtoupper(mb_substr($this->name, 0, 1));
     }
+
+    /**
+     * Matricule affiché sur le profil : TF-00012 (apprenant) ou ENS-00012 (vendeur).
+     */
+    public function matricule(): string
+    {
+        return ($this->isVendeur() ? 'ENS-' : 'TF-').str_pad((string) $this->id, 5, '0', STR_PAD_LEFT);
+    }
 }

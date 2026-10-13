@@ -54,5 +54,10 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::post('/deconnexion', [LoginController::class, 'destroy'])->name('logout');
+
     Route::get('/profil', [ProfileController::class, 'show'])->name('profile.show');
+    Route::put('/profil', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profil/mot-de-passe', [ProfileController::class, 'updatePassword'])
+        ->name('profile.password')
+        ->middleware('throttle:6,1');
 });

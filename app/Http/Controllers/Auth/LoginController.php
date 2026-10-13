@@ -103,7 +103,13 @@ class LoginController extends Controller
         $otp->markUsed();
 
         $remember = (bool) session('auth.otp.remember', false);
+        $isRegistration = session('auth.otp.context') === 'register';
         $this->forgetPendingOtp($request);
+
+        // Le code reçu par e-mail prouve que l'adresse est valide.
+        if (! $user->email_verified_at) {
+            $user->forceFill(['email_verified_at' => now()])->save();
+        }
 
         $token = TrustedDevice::trust($user, $request->ip(), TrustedDevice::guessLabel($request->userAgent()));
         Cookie::queue(Cookie::make(
@@ -115,7 +121,14 @@ class LoginController extends Controller
             sameSite: 'lax',
         ));
 
-        return $this->completeLogin($request, $user, $remember, 'Bienvenue ! Votre navigateur est maintenant reconnu.');
+        return $this->completeLogin(
+            $request,
+            $user,
+            $remember,
+            $isRegistration
+                ? 'Compte créé et vérifié. Bienvenue sur Tafely Kôrsy, '.$user->name.' !'
+                : 'Bienvenue ! Votre navigateur est maintenant reconnu.'
+        );
     }
 
     /**
@@ -204,6 +217,7 @@ class LoginController extends Controller
         session([
             'auth.otp.user_id' => $user->id,
             'auth.otp.remember' => $remember,
+            'auth.otp.context' => 'login',
         ]);
 
         return redirect()->back()->with([
@@ -238,7 +252,7 @@ class LoginController extends Controller
 
     private function forgetPendingOtp(Request $request): void
     {
-        $request->session()->forget(['auth.otp.user_id', 'auth.otp.remember']);
+        $request->session()->forget(['auth.otp.user_id', 'auth.otp.remember', 'auth.otp.context']);
     }
 
     private function backToLogin(Request $request): RedirectResponse
