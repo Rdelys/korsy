@@ -34,16 +34,11 @@
     $phoneFmt   = preg_replace('/^(\d{2})(\d{2})(\d{3})(\d{2})$/', '$1 $2 $3 $4', $phoneLocal);
     $phoneField = old('phone') ? preg_replace('/^\+?261/', '', old('phone')) : $phoneFmt;
 
-    // Opérateur détecté d'après le préfixe du numéro (RÉEL).
-    $operators = [
-        ['key' => 'mvola',  'name' => 'MVola (Telma)', 'prefixes' => ['34', '38'], 'hint' => '+261 34 / 38', 'icon' => 'phone_android', 'color' => 'text-amber-500',
-         'desc_c' => 'Achetez instantanément vos cours et fascicules sans carte bancaire.', 'desc_v' => 'Recevez vos gains directement sur votre compte MVola.'],
-        ['key' => 'orange', 'name' => 'Orange Money',  'prefixes' => ['32', '37'], 'hint' => '+261 32 / 37', 'icon' => 'sim_card', 'color' => 'text-orange-500',
-         'desc_c' => 'Activez le débit 1-clic pour vos achats de fascicules.', 'desc_v' => 'Recevez vos reversements sur votre compte Orange Money.'],
-        ['key' => 'airtel', 'name' => 'Airtel Money',  'prefixes' => ['33'], 'hint' => '+261 33', 'icon' => 'cell_tower', 'color' => 'text-red-600',
-         'desc_c' => 'Liaison instantanée avec votre compte Airtel.', 'desc_v' => 'Recevez vos reversements sur votre compte Airtel Money.'],
-    ];
-    $activeOp = collect($operators)->first(fn ($o) => in_array(substr($phoneLocal, 0, 2), $o['prefixes'], true))['key'] ?? null;
+    // Opérateurs (config/mobile_money.php) ; l'actif est détecté d'après le préfixe du numéro (RÉEL).
+    $operators = config('mobile_money.operators');
+    $activeOp  = collect($operators)->search(
+        fn ($o) => in_array(substr($phoneLocal, 0, 2), $o['prefixes'], true)
+    ) ?: null;
 
     // Onglets : libellés selon le profil.
     $tabs = $isVendeur
@@ -273,12 +268,24 @@
             t.addEventListener('click', function () { show(t.getAttribute('data-profile-tab'), true); });
         });
 
-        // Liens internes (« Recharger », « Modifier »…) qui ouvrent un onglet.
+        // Liens internes (« Recharger », « Modifier »…) qui ouvrent un onglet,
+        // avec un focus optionnel sur un champ (data-focus="id-du-champ").
         document.querySelectorAll('[data-goto-tab]').forEach(function (a) {
             a.addEventListener('click', function (e) {
                 e.preventDefault();
                 show(a.getAttribute('data-goto-tab'), true);
                 document.getElementById('profile-tabs').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                var focusId = a.getAttribute('data-focus');
+                if (focusId) {
+                    var el = document.getElementById(focusId);
+                    if (el) {
+                        setTimeout(function () {
+                            el.focus();
+                            if (el.select) { el.select(); }
+                        }, 350);
+                    }
+                }
             });
         });
 

@@ -1,4 +1,6 @@
-{{-- SECTION : DEVISE (statique : seul l'Ariary est actif) --}}
+{{-- SECTION : DEVISE (Ariary uniquement) --}}
+@php $currency = config('mobile_money.currency'); @endphp
+
 <div class="{{ $card }}">
     <div class="{{ $cardHead }}">
         <div>
@@ -12,46 +14,31 @@
         <span class="material-symbols-outlined text-outline" aria-hidden="true">currency_exchange</span>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-space-sm" role="radiogroup" aria-label="Devise">
-        {{-- Ariary : actif --}}
-        <label class="flex items-center gap-3 p-space-md rounded-lg border-2 border-primary-container bg-surface-container-low/40 cursor-pointer">
-            <input type="radio" name="currency" value="MGA" checked class="text-primary-container focus:ring-primary-container/30">
-            <span class="min-w-0">
-                <span class="flex items-center gap-1.5 text-label-lg font-label-lg text-primary font-bold">Ariary <span class="text-[10px] font-bold bg-primary text-on-primary px-1.5 py-0.5 rounded">Par défaut</span></span>
-                <span class="block text-body-sm font-body-sm text-on-surface-variant">MGA · Ar</span>
+    <div class="flex items-center gap-3 p-space-md rounded-lg border-2 border-primary-container bg-surface-container-low/40">
+        <span class="material-symbols-outlined icon-fill text-primary-container text-[22px]" aria-hidden="true">check_circle</span>
+        <span class="min-w-0">
+            <span class="flex items-center gap-1.5 text-label-lg font-label-lg text-primary font-bold">
+                {{ $currency['label'] }}
+                <span class="text-[10px] font-bold bg-primary text-on-primary px-1.5 py-0.5 rounded">Par défaut</span>
             </span>
-        </label>
-        {{-- Euro / Dollar : bientôt --}}
-        <label class="flex items-center gap-3 p-space-md rounded-lg border border-outline-variant/40 opacity-60 cursor-not-allowed" title="Bientôt disponible">
-            <input type="radio" name="currency" value="EUR" disabled class="text-primary-container">
-            <span class="min-w-0">
-                <span class="block text-label-lg font-label-lg text-primary font-bold">Euro</span>
-                <span class="block text-body-sm font-body-sm text-on-surface-variant">EUR · € — bientôt</span>
-            </span>
-        </label>
-        <label class="flex items-center gap-3 p-space-md rounded-lg border border-outline-variant/40 opacity-60 cursor-not-allowed" title="Bientôt disponible">
-            <input type="radio" name="currency" value="USD" disabled class="text-primary-container">
-            <span class="min-w-0">
-                <span class="block text-label-lg font-label-lg text-primary font-bold">Dollar US</span>
-                <span class="block text-body-sm font-body-sm text-on-surface-variant">USD · $ — bientôt</span>
-            </span>
-        </label>
+            <span class="block text-body-sm font-body-sm text-on-surface-variant">{{ $currency['code'] }} · {{ $currency['symbol'] }}</span>
+        </span>
     </div>
 
     <div class="mt-space-md flex items-start gap-2 p-space-sm rounded-lg bg-surface-container border border-outline-variant/30 text-body-sm font-body-sm text-on-surface-variant">
         <span class="material-symbols-outlined text-[18px] text-primary shrink-0" aria-hidden="true">info</span>
         <span>
-            Les transactions Mobile Money sont réglées en <strong class="text-primary">Ariary (Ar)</strong>.
+            Les transactions Mobile Money sont réglées en <strong class="text-primary">{{ $currency['label'] }} ({{ $currency['symbol'] }})</strong>.
             @if ($isVendeur)
-                Exemple : un fascicule vendu {{ $money(8000) }} Ar vous rapporte le montant affiché dans « Gains disponibles ».
+                Exemple : un fascicule vendu {{ $money(8000) }} {{ $currency['symbol'] }} vous rapporte le montant affiché dans « Gains disponibles ».
             @else
-                Exemple d'affichage : {{ $money(12500) }} Ar.
+                Exemple d'affichage : {{ $money(12500) }} {{ $currency['symbol'] }}.
             @endif
         </span>
     </div>
 </div>
 
-{{-- SECTION B : COMPTES MOBILE MONEY --}}
+{{-- SECTION B : COMPTES MOBILE MONEY (MVola, Orange Money) --}}
 <div class="{{ $card }}" id="payment-section">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-outline-variant/20 pb-4 mb-space-lg gap-2">
         <div>
@@ -61,18 +48,25 @@
             </h2>
             <p class="text-body-sm font-body-sm text-on-surface-variant mt-0.5">
                 {{ $isVendeur
-                    ? 'Recevez vos gains directement par MVola, Orange Money ou Airtel Money.'
+                    ? 'Recevez vos gains directement par MVola ou Orange Money.'
                     : 'Achetez instantanément vos cours et fascicules sans carte bancaire internationale.' }}
             </p>
         </div>
-        <button type="button" class="inline-flex items-center gap-1 text-label-md font-label-md text-secondary hover:underline self-start">
-            <span class="material-symbols-outlined text-[16px]" aria-hidden="true">add_circle</span><span>Ajouter un compte</span>
-        </button>
+        <a href="#info" data-goto-tab="info" data-focus="pf-phone" class="inline-flex items-center gap-1 text-label-md font-label-md text-secondary hover:underline self-start">
+            <span class="material-symbols-outlined text-[16px]" aria-hidden="true">swap_horiz</span><span>Changer de numéro</span>
+        </a>
     </div>
 
+    @if (! $activeOp && $user->phone)
+        <div class="flex items-start gap-2 mb-space-md p-space-sm rounded-lg bg-error-container text-on-error-container text-body-sm font-body-sm" role="alert">
+            <span class="material-symbols-outlined text-[18px] shrink-0" aria-hidden="true">warning</span>
+            <span>Votre numéro actuel ne correspond à aucun opérateur pris en charge (MVola ou Orange Money).</span>
+        </div>
+    @endif
+
     <div class="space-y-space-md">
-        @foreach ($operators as $op)
-            @php $isActive = $op['key'] === $activeOp; @endphp
+        @foreach ($operators as $key => $op)
+            @php $isActive = $key === $activeOp; @endphp
             <div @class([
                 'p-space-md rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-space-md transition-colors',
                 'border-2 border-primary-container bg-surface-container-low/40' => $isActive,
@@ -80,11 +74,11 @@
             ])>
                 <div class="flex items-center gap-space-md min-w-0">
                     <div @class([
-                        'w-12 h-12 rounded-lg flex items-center justify-center shrink-0',
-                        'bg-surface-container-lowest border border-outline-variant/40 shadow-sm' => $isActive,
-                        'bg-surface-container' => ! $isActive,
+                        'w-14 h-14 rounded-lg flex items-center justify-center shrink-0 overflow-hidden bg-surface-container-lowest border border-outline-variant/40',
+                        'shadow-sm' => $isActive,
                     ])>
-                        <span class="material-symbols-outlined text-[26px] {{ $op['color'] }} {{ $isActive ? 'icon-fill' : '' }}" aria-hidden="true">{{ $op['icon'] }}</span>
+                        <img src="{{ asset($op['logo']) }}" alt="{{ $op['name'] }}" width="48" height="48" loading="lazy"
+                             class="w-10 h-10 object-contain {{ $isActive ? '' : 'grayscale opacity-70' }}">
                     </div>
                     <div class="min-w-0">
                         <div class="flex flex-wrap items-center gap-2">
@@ -112,14 +106,14 @@
 
                 <div class="flex items-center gap-2 self-end sm:self-center shrink-0">
                     @if ($isActive)
-                        <a href="#info" data-goto-tab="info" class="px-3 py-1.5 rounded text-label-md font-label-md text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors">Modifier</a>
+                        <a href="#info" data-goto-tab="info" data-focus="pf-phone" class="px-3 py-1.5 rounded text-label-md font-label-md text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors">Modifier</a>
                         <button type="button" class="px-3 py-1.5 rounded text-label-md font-label-md bg-secondary text-on-secondary hover:bg-secondary-container transition-colors active:scale-[0.98]">
                             {{ $isVendeur ? 'Retirer mes gains' : 'Recharger' }}
                         </button>
                     @else
-                        <button type="button" class="px-3 py-1.5 rounded-lg border border-outline-variant hover:bg-surface-container text-primary text-label-md font-label-md transition-colors">
-                            Configurer ({{ $op['hint'] }})
-                        </button>
+                        <a href="#info" data-goto-tab="info" data-focus="pf-phone" class="px-3 py-1.5 rounded-lg border border-outline-variant hover:bg-surface-container text-primary text-label-md font-label-md transition-colors">
+                            Utiliser un numéro {{ $op['hint'] }}
+                        </a>
                     @endif
                 </div>
             </div>

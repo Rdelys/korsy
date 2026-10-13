@@ -33,12 +33,16 @@ class RegisterRequest extends FormRequest
 
     public function rules(): array
     {
+        // Préfixes autorisés : MVola + Orange Money (config/mobile_money.php).
+        $prefixes = collect(config('mobile_money.operators'))
+            ->pluck('prefixes')->flatten()->implode('|');
+
         return [
             'name' => ['required', 'string', 'min:2', 'max:255'],
             'role' => ['required', Rule::in([User::ROLE_CLIENT, User::ROLE_VENDEUR])],
             'phone' => [
                 'required',
-                'regex:/^\+261(32|33|34|37|38)\d{7}$/',
+                'regex:/^\+261('.$prefixes.')\d{7}$/',
                 Rule::unique('users', 'phone'),
             ],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')],
@@ -55,7 +59,7 @@ class RegisterRequest extends FormRequest
         return [
             'name.required' => 'Merci d\'indiquer votre nom complet.',
             'phone.required' => 'Le numéro Mobile Money est requis.',
-            'phone.regex' => 'Numéro invalide. Utilisez un numéro MVola, Orange Money ou Airtel Money malgache.',
+            'phone.regex' => 'Numéro invalide. Utilisez un numéro MVola ou Orange Money malgache.',
             'phone.unique' => 'Ce numéro est déjà associé à un compte.',
             'email.required' => 'Merci d\'indiquer votre adresse e-mail.',
             'email.email' => 'Cette adresse e-mail ne semble pas valide.',

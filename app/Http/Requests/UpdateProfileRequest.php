@@ -28,12 +28,15 @@ class UpdateProfileRequest extends FormRequest
         $user = $this->user();
         $id = $user->id;
 
+        $prefixes = collect(config('mobile_money.operators'))
+            ->pluck('prefixes')->flatten()->implode('|');
+
         $rules = [
             'name' => ['required', 'string', 'min:2', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($id)],
             'phone' => [
                 'required',
-                'regex:/^\+261(32|33|34|37|38)\d{7}$/',
+                'regex:/^\+261('.$prefixes.')\d{7}$/',
                 Rule::unique('users', 'phone')->ignore($id),
             ],
             'headline' => ['nullable', 'string', 'max:150'],
@@ -42,8 +45,6 @@ class UpdateProfileRequest extends FormRequest
             'level' => ['nullable', 'string', Rule::in(ProfileOptions::levelsFor($user->isVendeur()))],
         ];
 
-        // La présentation n'existe que pour les vendeurs : pour un apprenant,
-        // le champ n'est pas validé donc absent de validated() (non modifiable).
         if ($user->isVendeur()) {
             $rules['bio'] = ['nullable', 'string', 'max:400'];
         }
@@ -59,7 +60,7 @@ class UpdateProfileRequest extends FormRequest
             'email.email' => 'Cette adresse e-mail ne semble pas valide.',
             'email.unique' => 'Un autre compte utilise déjà cette adresse e-mail.',
             'phone.required' => 'Le numéro Mobile Money est requis.',
-            'phone.regex' => 'Numéro invalide. Utilisez un numéro MVola, Orange Money ou Airtel Money malgache.',
+            'phone.regex' => 'Numéro invalide. Utilisez un numéro MVola ou Orange Money Malagasy.',
             'phone.unique' => 'Ce numéro est déjà associé à un autre compte.',
             'headline.max' => 'L\'intitulé ne doit pas dépasser 150 caractères.',
             'school.max' => 'Le nom de l\'établissement est trop long.',

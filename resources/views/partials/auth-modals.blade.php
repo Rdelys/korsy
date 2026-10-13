@@ -15,6 +15,8 @@
     validation ou d'étape OTP, le contrôleur redirige vers la page précédente avec
     open_modal / auth_tab / auth_step / auth_role en session, et le script du layout
     (voir resources/views/layouts/app.blade.php) rouvre alors la modale au bon endroit.
+
+    Opérateurs pris en charge : MVola et Orange Money (voir config/mobile_money.php).
 --}}
 @php
     $inputClass = 'flex-1 py-2.5 px-3 text-body-md font-body-md text-on-surface placeholder:text-outline/70 border-0 focus:ring-0 outline-none bg-transparent';
@@ -151,7 +153,7 @@
                         <div class="{{ $fieldWrap }}">
                             <span class="inline-flex items-center px-3 bg-surface-container-low border-r border-outline-variant/40 text-label-md font-label-md text-primary font-bold">+261</span>
                             <input id="login-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="34 00 000 00" value="{{ $oldPhoneLocal }}" class="{{ $inputClass }}">
-                            <span class="pr-3 text-label-sm font-label-sm text-on-surface-variant whitespace-nowrap hidden sm:inline">MVola · Orange · Airtel</span>
+                            <span class="pr-3 text-label-sm font-label-sm text-on-surface-variant whitespace-nowrap hidden sm:inline">MVola · Orange</span>
                         </div>
                     </div>
 
@@ -215,7 +217,7 @@
                     <span class="material-symbols-outlined icon-fill text-primary-container text-lg shrink-0 mt-0.5" aria-hidden="true">verified_user</span>
                     <p class="text-[11px] leading-relaxed text-on-surface-variant font-body-sm">
                         <strong class="text-primary font-label-sm block">Rémunération garantie pour vendeurs :</strong>
-                        Validation rapide de votre profil enseignant et reversement direct par <span class="font-bold text-primary">MVola</span>, <span class="font-bold text-primary">Orange Money</span> ou <span class="font-bold text-primary">Airtel Money</span>.
+                        Validation rapide de votre profil enseignant et reversement direct par <span class="font-bold text-primary">MVola</span> ou <span class="font-bold text-primary">Orange Money</span>.
                     </p>
                 </div>
 
@@ -235,7 +237,7 @@
                     <div>
                         <div class="flex items-center justify-between mb-1">
                             <label for="reg-phone" class="text-label-sm font-label-sm text-primary">Numéro Mobile Money <span class="font-normal text-on-surface-variant">(requis)</span></label>
-                            <span class="text-[10px] text-secondary font-bold uppercase">MVola / Orange / Airtel</span>
+                            <span class="text-[10px] text-secondary font-bold uppercase">MVola / Orange</span>
                         </div>
                         <div class="{{ $fieldWrap }}">
                             <span class="inline-flex items-center px-3 bg-surface-container-low border-r border-outline-variant/40 text-label-md font-label-md text-primary font-bold">+261</span>
